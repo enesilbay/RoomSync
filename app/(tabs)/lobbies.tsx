@@ -17,6 +17,8 @@ import { logger } from '@/src/lib/logger';
 const T = C;
 const { width, height } = Dimensions.get('window');
 
+const getToken = async () => await AsyncStorage.getItem('access_token');
+
 interface Lobby {
   id: string;
   name: string;
@@ -31,6 +33,13 @@ interface Lobby {
   activeUsers?: number;
 }
 
+// Kartta "arkadaşın burada" bilgisi için kullanılan alanlar
+interface LobbyFriend {
+  fullName: string;
+  isOnline?: boolean;
+  currentRoom?: string;
+}
+
 // ── DEKORATIF ARKAPLAN NOKTALARI ──
 function BackgroundOrbs() {
   return (
@@ -43,17 +52,20 @@ function BackgroundOrbs() {
 }
 
 // ── Lobi Kartı (Beyaz & Soft Gölgeli) ──
-function LobbyCard({ item, onPress, index, friends }: { item: Lobby; onPress: () => void; index: number; friends: any[] }) {
+function LobbyCard({ item, onPress, index, friends }: { item: Lobby; onPress: () => void; index: number; friends: LobbyFriend[] }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  // Giriş animasyonu yalnızca mount'ta, kartın ilk sırasına göre gecikmeli oynar;
+  // filtre/arama sırayı değiştirdiğinde yeniden oynamasın diye ilk değer sabitlenir.
+  const enterDelay = useRef(index * 80).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 400, delay: index * 80, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 12, delay: index * 80, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 400, delay: enterDelay, useNativeDriver: true }),
+      Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 12, delay: enterDelay, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim, enterDelay]);
 
   const pressIn = () => Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, tension: 150 }).start();
   const pressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 150 }).start();
@@ -62,7 +74,7 @@ function LobbyCard({ item, onPress, index, friends }: { item: Lobby; onPress: ()
   const focusedCount = item.activeUsers || 0;
   const isActive = item.isActive !== false;
 
-  const friendsInLobby = friends?.filter((f: any) => f.currentRoom === item.name && f.isOnline) || [];
+  const friendsInLobby = friends?.filter((f) => f.currentRoom === item.name && f.isOnline) || [];
   let metaText = `${memberCount} kişi odada · ${focusedCount} odaklanıyor`;
   if (friendsInLobby.length > 0) {
     const firstName = friendsInLobby[0].fullName.split(' ')[0];
@@ -148,19 +160,11 @@ export default function LobbiesScreen() {
 
   useEffect(() => {
     Animated.timing(headerAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
-  }, []);
+  }, [headerAnim]);
 
-  const [friends, setFriends] = useState<any[]>([]);
+  const [friends, setFriends] = useState<LobbyFriend[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchLobbies();
-      fetchFriends();
-      loadUserData();
-    }, [myUserId])
-  );
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem('user_data');
       if (stored) {
@@ -174,11 +178,9 @@ export default function LobbiesScreen() {
     } catch (e) {
       logger.error('Kullanıcı verisi çekilemedi', e);
     }
-  };
+  }, []);
 
-  const getToken = async () => await AsyncStorage.getItem('access_token');
-
-  const fetchFriends = async () => {
+  const fetchFriends = useCallback(async () => {
     try {
       const token = await getToken();
       const res = await fetch(apiUrl('/users/friends/0'), {
@@ -189,9 +191,9 @@ export default function LobbiesScreen() {
         setFriends(Array.isArray(data) ? data : []);
       }
     } catch {}
-  };
+  }, []);
 
-  const fetchLobbies = async () => {
+  const fetchLobbies = useCallback(async () => {
     try {
       const token = await getToken();
       const response = await fetch(apiUrl('/lobbies'), {
@@ -207,7 +209,16 @@ export default function LobbiesScreen() {
     } catch (e) {
       logger.warn('[lobbies] Lobi listesi yüklenemedi:', e);
     }
-  };
+  }, [router]);
+
+  // Sekmeye her odaklanıldığında verileri tazele
+  useFocusEffect(
+    useCallback(() => {
+      fetchLobbies();
+      fetchFriends();
+      loadUserData();
+    }, [fetchLobbies, fetchFriends, loadUserData])
+  );
 
 
   const handleCreateLobby = async () => {
@@ -258,7 +269,7 @@ export default function LobbiesScreen() {
       if (res.ok) {
         setIsPasswordModalVisible(false);
         setEnterPassword('');
-        router.push({ pathname: '/sensor' as any, params: { ...params, roomName: selectedLobby.name, maxUsers: selectedLobby.maxUsers || 50, isElite: selectedLobby.isPremiumOnly ? 'true' : 'false' } });
+        router.push({ pathname: '/sensor', params: { ...params, roomName: selectedLobby.name, maxUsers: selectedLobby.maxUsers || 50, isElite: selectedLobby.isPremiumOnly ? 'true' : 'false' } });
       } else {
         Alert.alert('Hata', 'Şifre hatalı!');
       }
@@ -297,7 +308,7 @@ export default function LobbiesScreen() {
                 <Text style={s.pageTitle}>{userName}</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: myUserId } } as any)} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: myUserId } })} activeOpacity={0.7}>
               <FramedAvatar
                 uri={avatarUrl}
                 name={userName}
@@ -378,7 +389,7 @@ export default function LobbiesScreen() {
                     'Bu oda sadece Premium kullanıcılar içindir.',
                     [
                       { text: 'İptal', style: 'cancel' },
-                      { text: 'Premium Ol', onPress: () => router.push({ pathname: '/premium', params: { id: myUserId } } as any) }
+                      { text: 'Premium Ol', onPress: () => router.push({ pathname: '/premium', params: { id: myUserId } }) }
                     ]
                   );
                   return;
@@ -388,7 +399,7 @@ export default function LobbiesScreen() {
                   setSelectedLobby(item);
                   setIsPasswordModalVisible(true);
                 } else {
-                  router.push({ pathname: '/sensor' as any, params: { ...params, roomName: item.name, isElite: item.isPremiumOnly ? 'true' : 'false' } });
+                  router.push({ pathname: '/sensor', params: { ...params, roomName: item.name, isElite: item.isPremiumOnly ? 'true' : 'false' } });
                 }
               }} 
             />
@@ -410,7 +421,7 @@ export default function LobbiesScreen() {
         style={s.fab} 
         onPress={() => {
           if (isPremium) setIsModalVisible(true);
-          else router.push({ pathname: '/premium', params: { id: myUserId } } as any);
+          else router.push({ pathname: '/premium', params: { id: myUserId } });
         }} 
         activeOpacity={0.85}
       >

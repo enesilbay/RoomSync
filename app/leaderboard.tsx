@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -28,7 +28,7 @@ export default function LeaderboardScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
@@ -48,11 +48,12 @@ export default function LeaderboardScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [tab]);
 
+  // Sekme değişince tabloyu yeniden yükle
   useEffect(() => {
     fetchLeaderboard();
-  }, [tab]);
+  }, [fetchLeaderboard]);
 
   return (
     <AppScreen>

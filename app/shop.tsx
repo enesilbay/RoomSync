@@ -103,8 +103,8 @@ export default function ShopScreen() {
 
               setUser(data.user);
               Alert.alert('Başarılı', 'Öğe başarıyla satın alındı!');
-            } catch (error: any) {
-              Alert.alert('Hata', error.message);
+            } catch (error: unknown) {
+              Alert.alert('Hata', error instanceof Error ? error.message : undefined);
             } finally {
               setProcessing(false);
             }
@@ -128,8 +128,8 @@ export default function ShopScreen() {
 
       setUser(data.user);
       await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
-    } catch (error: any) {
-      Alert.alert('Hata', error.message);
+    } catch (error: unknown) {
+      Alert.alert('Hata', error instanceof Error ? error.message : undefined);
     } finally {
       setProcessing(false);
     }

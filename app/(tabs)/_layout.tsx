@@ -9,6 +9,7 @@ import { apiUrl, BACKEND_URL } from '@/src/lib/api';
 import { C } from '@/src/theme';
 import { logger } from '@/src/lib/logger';
 import { io, Socket } from 'socket.io-client';
+import type { NotificationBehavior } from 'expo-notifications';
 
 // Expo Go (SDK 53+) Android push bildirimlerini desteklemiyor.
 // Tüm expo-notifications API'si sadece gerçek build'lerde yükleniyor.
@@ -24,14 +25,26 @@ type NotificationData = {
   roomName?: unknown;
 };
 
+// AsyncStorage'daki 'user_data' içinden oda davetinde kullanılan alanlar
+type StoredUser = {
+  id?: number;
+  fullName?: string;
+  totalFocusMinutes?: number;
+};
+
+type NudgePayload = {
+  message?: string;
+  senderName?: string;
+};
+
 let Notifications: NotificationsModule | null = null;
 
 if (!isExpoGo) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   Notifications = require('expo-notifications') as NotificationsModule;
   Notifications!.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
+    // shouldShowAlert (kullanımdan kalktı) yerine banner + liste; iOS'ta .alert = .banner + .list
+    handleNotification: async (): Promise<NotificationBehavior> => ({
       shouldPlaySound: true,
       shouldSetBadge: false,
       shouldShowBanner: true,
@@ -47,17 +60,18 @@ export default function TabLayout() {
   useEffect(() => {
     const openNotificationTarget = (data?: NotificationData) => {
       if (data?.type === 'room_invite' && typeof data.roomName === 'string') {
+        const roomName = data.roomName;
         AsyncStorage.getItem('user_data').then((stored) => {
-          const user = stored ? JSON.parse(stored) : {};
+          const user: StoredUser = stored ? JSON.parse(stored) : {};
           router.push({
             pathname: '/sensor',
             params: {
               id: user.id,
               fullName: user.fullName,
               score: user.totalFocusMinutes,
-              roomName: data.roomName,
+              roomName,
             },
-          } as any);
+          });
         }).catch(() => {});
         return;
       }
@@ -73,7 +87,7 @@ export default function TabLayout() {
           targetName: typeof data.targetName === 'string' ? data.targetName : 'Mesaj',
           targetUsername: typeof data.targetUsername === 'string' ? data.targetUsername : '',
         },
-      } as any);
+      });
     };
 
     const responseSub = Notifications?.addNotificationResponseReceivedListener((response) => {
@@ -102,7 +116,7 @@ export default function TabLayout() {
       if (token) {
         globalSocket = io(BACKEND_URL, { transports: ['websocket'], auth: { token } });
         
-        globalSocket.on('nudge_received', (data: any) => {
+        globalSocket.on('nudge_received', (data: NudgePayload) => {
           Alert.alert('👋 Dürtüldün!', data.message || `${data.senderName} seni çalışmaya davet ediyor!`);
         });
       }

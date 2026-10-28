@@ -4,7 +4,7 @@ import {
   StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, RefreshControl, Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -42,7 +42,30 @@ type Friend = {
   currentRoom?: string;
 };
 
-const QUICK_ACTIONS = [
+// Bildirim panelindeki satırı çizen gönderen bilgisi
+type RequestSender = {
+  id: number;
+  fullName: string;
+  username: string;
+  avatarUrl?: string;
+  equippedProfileFrame?: string;
+};
+
+// Arkadaşlık isteği (sunucudan) ya da okunmamış DM satırı (istemcide üretilir)
+type SocialRequest =
+  | { id: number; sender: RequestSender; reqType: 'friend' }
+  | { id: string; sender: RequestSender; reqType: 'unread_dm' };
+
+type QuickAction = {
+  id: string;
+  icon: string;
+  label: string;
+  color: string;
+  bg: string;
+  route: Href | null;
+};
+
+const QUICK_ACTIONS: QuickAction[] = [
   { id: 'messages', icon: 'comment-dots', label: 'Mesajlar', color: T.quickAction.messagesFg, bg: T.quickAction.messagesBg, route: null },
   { id: 'shop', icon: 'shopping-cart', label: 'Mağaza', color: T.quickAction.shopFg, bg: T.quickAction.shopBg, route: '/shop' },
   { id: 'analytics', icon: 'chart-line', label: 'Analitik', color: T.quickAction.analyticsFg, bg: T.quickAction.analyticsBg, route: '/analytics' },
@@ -53,7 +76,7 @@ export default function MeScreen() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<SocialRequest[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Modals & Forms
@@ -88,17 +111,17 @@ export default function MeScreen() {
         setFriends(sorted);
       }
       
-      let allRequests: any[] = [];
+      let allRequests: SocialRequest[] = [];
       if (reqsRes.ok) {
         const data = await reqsRes.json();
         if (Array.isArray(data)) {
-          allRequests = data.map(req => ({ ...req, reqType: 'friend' }));
+          allRequests = data.map((req): SocialRequest => ({ ...req, reqType: 'friend' }));
         }
       }
       if (unreadRes.ok) {
         const data = await unreadRes.json();
         if (Array.isArray(data)) {
-          const unreadReqs = data.map((sender: any) => ({
+          const unreadReqs = data.map((sender: RequestSender): SocialRequest => ({
             id: `unread_${sender.id}`,
             sender,
             reqType: 'unread_dm',
@@ -116,7 +139,7 @@ export default function MeScreen() {
         Animated.spring(slideAnim, { toValue: 0, tension: 80, friction: 14, useNativeDriver: true }),
       ]).start();
     }
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   useFocusEffect(useCallback(() => {
     setLoading(true);
@@ -180,16 +203,16 @@ export default function MeScreen() {
     }
   };
 
-  const handleQuickAction = async (action: typeof QUICK_ACTIONS[0]) => {
+  const handleQuickAction = async (action: QuickAction) => {
     if (action.id === 'analytics' && user && !user.isPremium) {
-      router.push({ pathname: '/premium', params: { id: user.id } } as any);
+      router.push({ pathname: '/premium', params: { id: user.id } });
       return;
     }
     if (action.id === 'messages') {
       setDmModalVisible(true);
       return;
     }
-    if (action.route) router.push(action.route as any);
+    if (action.route) router.push(action.route);
   };
 
   if (loading) {
@@ -237,7 +260,7 @@ export default function MeScreen() {
                 </View>
               )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: user.id, openSettings: 'true' } } as any)}>
+            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: user.id, openSettings: 'true' } })}>
               <FontAwesome5 name="cog" size={20} color={T.textMuted} />
             </TouchableOpacity>
           </View>
@@ -246,7 +269,7 @@ export default function MeScreen() {
         {/* ── PROFİL KARTI ── */}
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => router.push({ pathname: '/profile', params: { id: user.id } } as any)}
+          onPress={() => router.push({ pathname: '/profile', params: { id: user.id } })}
         >
           <LinearGradient
             colors={[T.primary, T.profileCard.gradientEnd]}
@@ -317,7 +340,7 @@ export default function MeScreen() {
           todayMinutes={user.totalFocusMinutes ?? 0}
           streakDays={user.currentStreak ?? 1}
           coins={user.coins ?? 0}
-          onPressCoins={() => router.push('/shop' as any)}
+          onPressCoins={() => router.push('/shop')}
         />
 
         {/* ── HIZLI ERİŞİM IZGARASI ── */}
@@ -377,7 +400,7 @@ export default function MeScreen() {
                     onDM={() => router.push({
                       pathname: '/dm',
                       params: { targetUserId: friend.id, targetName: friend.fullName, targetUsername: friend.username, targetAvatarUrl: friend.avatarUrl || '', targetProfileFrame: friend.equippedProfileFrame || 'none' }
-                    } as any)}
+                    })}
                     onNudge={handleNudge}
                   />
                 ))}
@@ -393,7 +416,7 @@ export default function MeScreen() {
                     onDM={() => router.push({
                       pathname: '/dm',
                       params: { targetUserId: friend.id, targetName: friend.fullName, targetUsername: friend.username, targetAvatarUrl: friend.avatarUrl || '', targetProfileFrame: friend.equippedProfileFrame || 'none' }
-                    } as any)}
+                    })}
                     onNudge={handleNudge}
                   />
                 ))}
@@ -434,7 +457,7 @@ export default function MeScreen() {
                       router.push({
                         pathname: '/dm',
                         params: { targetUserId: friend.id, targetName: friend.fullName, targetUsername: friend.username, targetAvatarUrl: friend.avatarUrl || '', targetProfileFrame: friend.equippedProfileFrame || 'none' }
-                      } as any);
+                      });
                     }}
                   >
                     <View style={s.friendAvatar}>

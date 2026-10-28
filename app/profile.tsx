@@ -15,6 +15,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { apiUrl, assetUrl, getAuthHeaders } from '@/src/lib/api';
 import { AppScreen, DarkSheetModal, IconButton, PageHeader, SoftCard } from '@/src/components/common';
 import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { appendFile } from '@/src/lib/upload';
 import { C, Theme } from '@/src/theme';
 import { getRankInfo, getRankProgress } from '@/src/lib/rank';
 import { logger } from '@/src/lib/logger';
@@ -84,7 +85,7 @@ export default function ProfileScreen() {
         setSettingsVisible(true);
         router.setParams({ openSettings: undefined }); // Prevent reopening on subsequent focuses
       }
-    }, [fetchUserData, params.openSettings]),
+    }, [fetchUserData, params.openSettings, router]),
   );
 
   const handleLogout = () => {
@@ -98,7 +99,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.multiRemove(['user_data', 'access_token']);
-            router.replace('/' as any);
+            router.replace('/');
           },
         },
       ]
@@ -130,7 +131,7 @@ export default function ProfileScreen() {
       const formData = new FormData();
       const fileUri = imageAsset.uri;
       const fileName = imageAsset.fileName || fileUri.split('/').pop() || 'avatar.jpg';
-      formData.append('file', { uri: fileUri, name: fileName, type: imageAsset.mimeType || 'image/jpeg' } as any);
+      appendFile(formData, 'file', { uri: fileUri, name: fileName, type: imageAsset.mimeType || 'image/jpeg' });
 
       const token = await AsyncStorage.getItem('access_token');
       const res = await fetch(apiUrl(`/users/avatar/${myUserId}`), {
@@ -148,9 +149,9 @@ export default function ProfileScreen() {
       const data = JSON.parse(resText);
       setUser(data.user);
       await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error(err);
-      Alert.alert('Hata', err.message || 'Avatar yuklenemedi.');
+      Alert.alert('Hata', (err instanceof Error && err.message) || 'Avatar yuklenemedi.');
     } finally {
       setIsUploading(false);
     }
@@ -335,7 +336,7 @@ export default function ProfileScreen() {
         </View>
       </SoftCard>
 
-      <TouchableOpacity onPress={() => router.push('/shop' as any)} activeOpacity={0.86}>
+      <TouchableOpacity onPress={() => router.push('/shop')} activeOpacity={0.86}>
         <SoftCard style={[styles.analyticsButton, { backgroundColor: T.primary, marginBottom: 16 }]}>
           <FontAwesome5 solid name="shopping-cart" size={16} color={T.onColor} />
           <Text style={[styles.analyticsText, { color: T.onColor }]}>Magazaya Git (Shop)</Text>
@@ -347,9 +348,9 @@ export default function ProfileScreen() {
         activeOpacity={0.86}
         onPress={() => {
           if (user.isPremium) {
-            router.push('/analytics' as any);
+            router.push('/analytics');
           } else {
-            router.push({ pathname: '/premium', params: { id: myUserId } } as any);
+            router.push({ pathname: '/premium', params: { id: myUserId } });
           }
         }}
       >
@@ -433,7 +434,7 @@ export default function ProfileScreen() {
           <TouchableOpacity
             onPress={() => {
               setSettingsVisible(false);
-              router.push({ pathname: '/premium', params: { id: myUserId } } as any);
+              router.push({ pathname: '/premium', params: { id: myUserId } });
             }}
             style={styles.premiumAction}
           >

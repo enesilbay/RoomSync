@@ -10,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  type KeyboardEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,10 +25,20 @@ import { logger } from '@/src/lib/logger';
 const BACKEND_URL = apiUrl('');
 const T = C;
 
+// Sunucudan gelen DM kaydı (geçmiş ve canlı 'receive_dm' aynı biçimde)
+type DmMessage = {
+  id: number | string;
+  text: string;
+  senderId?: number;
+  receiverId?: number;
+  sender?: { id: number };
+  createdAt?: string;
+};
+
 export default function DMScreen() {
   const router = useRouter();
   const { targetUserId, targetName, targetUsername, targetAvatarUrl, targetProfileFrame } = useLocalSearchParams();
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<DmMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [myUserId, setMyUserId] = useState<number>(0);
   const [myBubbleColor, setMyBubbleColor] = useState<string>(T.primary);
@@ -42,7 +53,7 @@ export default function DMScreen() {
   const inputBottom = keyboardBottom > 0 ? keyboardBottom + 8 : baseBottom;
 
   useEffect(() => {
-    const updateKeyboardBottom = (event: any) => {
+    const updateKeyboardBottom = (event: KeyboardEvent) => {
       const windowHeight = Dimensions.get('window').height;
       const keyboardTop = event?.endCoordinates?.screenY;
       const nextBottom = typeof keyboardTop === 'number'
@@ -67,17 +78,15 @@ export default function DMScreen() {
       try {
         const token = await AsyncStorage.getItem('access_token');
         
-        let uid = myUserId;
         const stored = await AsyncStorage.getItem('user_data');
         if (stored) {
           const user = JSON.parse(stored);
-          uid = user.id;
           setMyUserId(user.id);
           if (user.equippedBubbleColor) setMyBubbleColor(user.equippedBubbleColor);
         } else {
           const meRes = await fetch(apiUrl('/users/me'), { headers: { Authorization: `Bearer ${token}` } });
           const meData = await meRes.json();
-          uid = meData.user.id;
+          const uid = meData.user.id;
           setMyUserId(uid);
           if (meData.user.equippedBubbleColor) setMyBubbleColor(meData.user.equippedBubbleColor);
         }
@@ -104,7 +113,7 @@ export default function DMScreen() {
       const token = await AsyncStorage.getItem('access_token');
       socketRef.current = io(BACKEND_URL, { transports: ['websocket'], auth: { token } });
       
-      socketRef.current.on('receive_dm', (msg: any) => {
+      socketRef.current.on('receive_dm', (msg: DmMessage) => {
         if (
           (msg.senderId === myUserId && msg.receiverId === Number(targetUserId)) ||
           (msg.senderId === Number(targetUserId) && msg.receiverId === myUserId)

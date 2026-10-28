@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
   type StyleProp,
+  type TextInputProps,
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -155,8 +156,8 @@ export function AppInput({
   iconName?: string;
   secureTextEntry?: boolean;
   error?: string;
-  keyboardType?: any;
-  autoCapitalize?: any;
+  keyboardType?: TextInputProps['keyboardType'];
+  autoCapitalize?: TextInputProps['autoCapitalize'];
   style?: StyleProp<ViewStyle>;
 }) {
   const [isFocused, setIsFocused] = useState(false);

@@ -3,12 +3,14 @@ import {
   StyleSheet, Text, View, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
   ScrollView, Animated, Dimensions, StatusBar, Image,
+  type TextInputProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { apiUrl } from '@/src/lib/api';
+import { toRouteParams } from '@/src/lib/routeParams';
 import { C, Theme } from '@/src/theme';
 
 const T = C;
@@ -22,8 +24,8 @@ function InputField({
   value: string;
   onChangeText: (t: string) => void;
   secureTextEntry?: boolean;
-  keyboardType?: any;
-  autoCapitalize?: any;
+  keyboardType?: TextInputProps['keyboardType'];
+  autoCapitalize?: TextInputProps['autoCapitalize'];
   iconName: string;
 }) {
   const [focused, setFocused] = useState(false);
@@ -33,7 +35,7 @@ function InputField({
   useEffect(() => {
     Animated.timing(colorAnim, { toValue: focused ? 1 : 0, duration: 200, useNativeDriver: false }).start();
     Animated.spring(scaleAnim, { toValue: focused ? 1.01 : 1, tension: 120, friction: 8, useNativeDriver: true }).start();
-  }, [focused]);
+  }, [focused, colorAnim, scaleAnim]);
 
   const borderColor = colorAnim.interpolate({ inputRange: [0, 1], outputRange: [T.border, T.primary] });
   const bgColor = colorAnim.interpolate({ inputRange: [0, 1], outputRange: [T.surface, T.softIndigo] });
@@ -84,13 +86,24 @@ export default function AuthScreen() {
   const logoScale = useRef(new Animated.Value(0.85)).current;
 
   useEffect(() => {
+    // Kayıtlı oturum varsa doğrudan lobilere geç (yalnızca ilk açılışta çalışır)
+    const checkExistingLogin = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user_data');
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          router.replace({ pathname: '/lobbies', params: toRouteParams(parsed) });
+        }
+      } catch {}
+    };
+
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
       Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 12, useNativeDriver: true }),
       Animated.spring(logoScale, { toValue: 1, tension: 50, friction: 10, useNativeDriver: true }),
     ]).start();
     checkExistingLogin();
-  }, []);
+  }, [fadeAnim, slideAnim, logoScale, router]);
 
   const switchTab = (toLogin: boolean) => {
     Animated.sequence([
@@ -101,16 +114,6 @@ export default function AuthScreen() {
     setIsForgotPassword(false);
     setIsResetPassword(false);
     setIsVerifyEmail(false);
-  };
-
-  const checkExistingLogin = async () => {
-    try {
-      const userData = await AsyncStorage.getItem('user_data');
-      if (userData) {
-        const parsed = JSON.parse(userData);
-        router.replace({ pathname: '/lobbies' as any, params: parsed });
-      }
-    } catch {}
   };
 
   const handleAuth = async () => {
@@ -145,7 +148,7 @@ export default function AuthScreen() {
         } else {
           await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
           await AsyncStorage.setItem('access_token', data.access_token);
-          router.replace({ pathname: '/lobbies' as any, params: data.user });
+          router.replace({ pathname: '/lobbies', params: toRouteParams(data.user) });
         }
       } else {
         if (data.requiresVerification) {
@@ -182,7 +185,7 @@ export default function AuthScreen() {
         Alert.alert('Tebrikler! 🎉', data.message);
         await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
         await AsyncStorage.setItem('access_token', data.access_token);
-        router.replace({ pathname: '/lobbies' as any, params: data.user });
+        router.replace({ pathname: '/lobbies', params: toRouteParams(data.user) });
       } else {
         Alert.alert('Hata', data.message || 'Doğrulama kodu hatalı.');
       }
