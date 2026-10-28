@@ -379,6 +379,19 @@ export default function AuthScreen() {
               </TouchableOpacity>
             </Animated.View>
 
+            {/* HESAPSIZ SOLO ODAK */}
+            <TouchableOpacity
+              style={s.guestBtn}
+              onPress={() => router.replace('/focus')}
+              activeOpacity={0.7}
+              accessibilityRole="link"
+              accessibilityLabel="Hesap olmadan dene"
+              accessibilityHint="Giriş yapmadan solo odak ekranını açar"
+            >
+              <FontAwesome5 solid name="stopwatch" size={13} color={T.primary} />
+              <Text style={s.guestText}>Hesap olmadan dene</Text>
+            </TouchableOpacity>
+
             {/* ALT ÖZELLİK CHİPLERİ */}
             <View style={s.features}>
               {[
@@ -473,6 +486,9 @@ const s = StyleSheet.create({
 
   backToLoginBtn: { marginTop: 10, alignItems: 'center' },
   backToLoginText: { color: T.textMuted, fontSize: 13, fontWeight: '600' },
+
+  guestBtn: { marginTop: 18, minHeight: 44, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  guestText: { color: T.primary, fontSize: 14, fontWeight: '800', textDecorationLine: 'underline' },
 
   features: { flexDirection: 'row', gap: 10, marginTop: 24, flexWrap: 'wrap', justifyContent: 'center' },
   featureChip: {
