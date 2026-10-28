@@ -1,3 +1,5 @@
+import { C } from '@/src/theme';
+
 export interface RankInfo {
   title: string;
   icon: string;
@@ -7,11 +9,11 @@ export interface RankInfo {
 }
 
 export const RANKS: RankInfo[] = [
-  { title: 'Çaylak', icon: 'medal', color: '#cd7f32', min: 0, max: 50 },          // Bronz
-  { title: 'Odaklı', icon: 'medal', color: '#C0C0C0', min: 50, max: 200 },        // Gümüş
-  { title: 'Akademisyen', icon: 'award', color: '#FFD700', min: 200, max: 500 },  // Altın
-  { title: 'Usta', icon: 'gem', color: '#2ecc71', min: 500, max: 1000 },          // Zümrüt
-  { title: 'Efsane', icon: 'crown', color: '#9b59b6', min: 1000, max: null },     // Ametist / Mor
+  { title: 'Çaylak', icon: 'medal', color: C.rank.bronze, min: 0, max: 50 },          // Bronz
+  { title: 'Odaklı', icon: 'medal', color: C.rank.silver, min: 50, max: 200 },        // Gümüş
+  { title: 'Akademisyen', icon: 'award', color: C.rank.gold, min: 200, max: 500 },  // Altın
+  { title: 'Usta', icon: 'gem', color: C.rank.emerald, min: 500, max: 1000 },          // Zümrüt
+  { title: 'Efsane', icon: 'crown', color: C.rank.amethyst, min: 1000, max: null },     // Ametist / Mor
 ];
 
 export const getRankInfo = (points: number): RankInfo => {

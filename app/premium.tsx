@@ -168,10 +168,10 @@ export default function PremiumScreen() {
       <TouchableOpacity onPress={handleStartPayment} disabled={isLoading} activeOpacity={0.88}>
         <LinearGradient colors={[T.primary, T.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.button}>
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={T.onColor} />
           ) : (
             <>
-              <FontAwesome5 solid name="bolt" size={15} color="#FFFFFF" />
+              <FontAwesome5 solid name="bolt" size={15} color={T.onColor} />
               <Text style={styles.buttonText}>
                 {selectedPlan === 'yearly' ? 'YILLIK PRO İLE BAŞLA (₺399.99)' : 'AYLIK PRO İLE BAŞLA (₺49.99)'}
               </Text>
@@ -185,7 +185,7 @@ export default function PremiumScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.stripeSheet}>
             <View style={styles.sheetHeader}>
-              <FontAwesome5 name="stripe" size={32} color="#635BFF" brand />
+              <FontAwesome5 name="stripe" size={32} color={T.brand.stripe} brand />
               <TouchableOpacity onPress={() => setIsStripeModalVisible(false)} style={styles.closeBtn}>
                 <FontAwesome5 name="times" size={16} color={T.textMuted} />
               </TouchableOpacity>
@@ -214,7 +214,7 @@ export default function PremiumScreen() {
             </View>
 
             <TouchableOpacity style={styles.payConfirmBtn} onPress={confirmStripePayment} activeOpacity={0.85}>
-              <FontAwesome5 name="lock" size={14} color="#FFF" solid />
+              <FontAwesome5 name="lock" size={14} color={T.onColor} solid />
               <Text style={styles.payConfirmText}>ÖDEMEYİ ONAYLA VEYA TEST ET</Text>
             </TouchableOpacity>
           </View>
@@ -286,8 +286,8 @@ const styles = StyleSheet.create({
   stripeInfoTitle: { color: T.primary, fontSize: 13, fontWeight: '900' },
   stripeInfoText: { color: T.textDark, fontSize: 12, fontWeight: '600', lineHeight: 17 },
   button: { height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10, marginBottom: 30, ...Theme.shadows.medium },
-  buttonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.65)', justifyContent: 'flex-end' },
+  buttonText: { color: T.onColor, fontSize: 14, fontWeight: '900', letterSpacing: 0.5 },
+  modalOverlay: { flex: 1, backgroundColor: T.overlayDark, justifyContent: 'flex-end' },
   stripeSheet: { backgroundColor: T.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: T.border },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   closeBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: T.background, alignItems: 'center', justifyContent: 'center' },
@@ -312,12 +312,12 @@ const styles = StyleSheet.create({
   payConfirmBtn: {
     height: 52,
     borderRadius: 14,
-    backgroundColor: '#635BFF',
+    backgroundColor: T.brand.stripe,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
   },
-  payConfirmText: { color: '#FFF', fontSize: 14, fontWeight: '900' },
+  payConfirmText: { color: T.onColor, fontSize: 14, fontWeight: '900' },
 });
 

@@ -43,10 +43,10 @@ type Friend = {
 };
 
 const QUICK_ACTIONS = [
-  { id: 'messages', icon: 'comment-dots', label: 'Mesajlar', color: '#4F46E5', bg: '#EEF2FF', route: null },
-  { id: 'shop', icon: 'shopping-cart', label: 'Mağaza', color: '#D97706', bg: '#FEF3C7', route: '/shop' },
-  { id: 'analytics', icon: 'chart-line', label: 'Analitik', color: '#059669', bg: '#D1FAE5', route: '/analytics' },
-  { id: 'leaderboard', icon: 'trophy', label: 'Liderlik', color: '#7C3AED', bg: '#EDE9FE', route: '/leaderboard' },
+  { id: 'messages', icon: 'comment-dots', label: 'Mesajlar', color: T.quickAction.messagesFg, bg: T.quickAction.messagesBg, route: null },
+  { id: 'shop', icon: 'shopping-cart', label: 'Mağaza', color: T.quickAction.shopFg, bg: T.quickAction.shopBg, route: '/shop' },
+  { id: 'analytics', icon: 'chart-line', label: 'Analitik', color: T.quickAction.analyticsFg, bg: T.quickAction.analyticsBg, route: '/analytics' },
+  { id: 'leaderboard', icon: 'trophy', label: 'Liderlik', color: T.quickAction.leaderboardFg, bg: T.quickAction.leaderboardBg, route: '/leaderboard' },
 ];
 
 export default function MeScreen() {
@@ -249,7 +249,7 @@ export default function MeScreen() {
           onPress={() => router.push({ pathname: '/profile', params: { id: user.id } } as any)}
         >
           <LinearGradient
-            colors={[T.primary, '#3949AB']}
+            colors={[T.primary, T.profileCard.gradientEnd]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={s.profileCard}
@@ -262,8 +262,8 @@ export default function MeScreen() {
                 frameId={user.equippedProfileFrame}
                 size={64}
                 colors={T}
-                backgroundColor="rgba(255,255,255,0.2)"
-                textColor="#FFF"
+                backgroundColor={T.profileCard.glass}
+                textColor={T.onColor}
                 textSize={26}
                 baseBorderWidth={3}
                 activeBorderWidth={4}
@@ -291,7 +291,7 @@ export default function MeScreen() {
             {/* Stat Badges */}
             <View style={s.statBadges}>
               <View style={s.statBadge}>
-                <FontAwesome5 name="fire-alt" size={12} color="#FF6B6B" solid />
+                <FontAwesome5 name="fire-alt" size={12} color={T.profileCard.streakFire} solid />
                 <Text style={s.statBadgeText}>{user.currentStreak ?? 0}</Text>
               </View>
               <View style={s.statBadge}>
@@ -336,7 +336,7 @@ export default function MeScreen() {
                   <FontAwesome5
                     name={isLocked ? 'lock' : action.icon}
                     size={20}
-                    color="#FFF"
+                    color={T.onColor}
                     solid
                   />
                 </View>
@@ -407,7 +407,7 @@ export default function MeScreen() {
 
       {/* ── DM MODAL ── */}
       <Modal visible={dmModalVisible} animationType="slide" transparent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+        <View style={{ flex: 1, backgroundColor: T.overlay, justifyContent: 'flex-end' }}>
           <View style={s.dmSheet}>
             <View style={s.dmHandle} />
             <View style={s.dmHeader}>
@@ -454,7 +454,7 @@ export default function MeScreen() {
                       <Text style={s.friendSub}>{friend.isOnline ? '🟢 Çevrimiçi' : `${friend.totalFocusMinutes} dk odak`}</Text>
                     </View>
                     <View style={[s.dmBtn, { backgroundColor: T.primary }]}>
-                      <FontAwesome5 name="paper-plane" size={13} color="#FFF" solid />
+                      <FontAwesome5 name="paper-plane" size={13} color={T.onColor} solid />
                     </View>
                   </TouchableOpacity>
                 ))
@@ -467,7 +467,7 @@ export default function MeScreen() {
 
       {/* ── ARKADAŞ EKLEME MODALI ── */}
       <Modal visible={isFriendModalVisible} animationType="fade" transparent statusBarTranslucent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 20 }}>
+        <View style={{ flex: 1, backgroundColor: T.overlay, justifyContent: 'center', padding: 20 }}>
           <View style={s.modalSheet}>
             <View style={{ alignItems: 'center', marginBottom: 15 }}>
               <View style={s.modalIconCircle}>
@@ -491,7 +491,7 @@ export default function MeScreen() {
 
       {/* ── GELEN İSTEKLER MODALI ── */}
       <Modal visible={isSocialModalVisible} animationType="slide" transparent statusBarTranslucent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+        <View style={{ flex: 1, backgroundColor: T.overlay, justifyContent: 'flex-end' }}>
           <View style={[s.dmSheet, { maxHeight: '85%' }]}>
             <View style={s.dmHandle} />
             <View style={s.dmHeader}>
@@ -536,15 +536,15 @@ export default function MeScreen() {
                           setDmModalVisible(true);
                         }}
                       >
-                        <FontAwesome5 solid name="envelope" size={14} color="#FFF" />
+                        <FontAwesome5 solid name="envelope" size={14} color={T.onColor} />
                       </TouchableOpacity>
                     ) : (
                       <View style={{ flexDirection: 'row', gap: 8 }}>
                         <TouchableOpacity style={[s.actionBtn, s.acceptBtn]} onPress={() => handleRespondRequest(req.id, 'accepted')}>
-                          <FontAwesome5 solid name="check" size={14} color="#059669" />
+                          <FontAwesome5 solid name="check" size={14} color={T.friendRequest.accept} />
                         </TouchableOpacity>
                         <TouchableOpacity style={[s.actionBtn, s.rejectBtn]} onPress={() => handleRespondRequest(req.id, 'rejected')}>
-                          <FontAwesome5 solid name="times" size={14} color="#DC2626" />
+                          <FontAwesome5 solid name="times" size={14} color={T.friendRequest.reject} />
                         </TouchableOpacity>
                       </View>
                     )}
@@ -616,23 +616,23 @@ const s = StyleSheet.create({
     backgroundColor: T.surface, alignItems: 'center', justifyContent: 'center',
   },
   profileInfo: { paddingRight: 80 },
-  profileName: { color: '#FFF', fontSize: 22, fontWeight: '900', marginBottom: 2 },
-  profileUsername: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600', marginBottom: 8 },
+  profileName: { color: T.onColor, fontSize: 22, fontWeight: '900', marginBottom: 2 },
+  profileUsername: { color: T.profileCard.textMuted, fontSize: 14, fontWeight: '600', marginBottom: 8 },
   rankRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rankText: { fontSize: 13, fontWeight: '800' },
 
   statBadges: { flexDirection: 'row', gap: 10, marginTop: 14, marginBottom: 14 },
   statBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: T.profileCard.glassSoft,
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
   },
-  statBadgeText: { color: '#FFF', fontSize: 14, fontWeight: '900' },
+  statBadgeText: { color: T.onColor, fontSize: 14, fontWeight: '900' },
 
   progressSection: { gap: 6 },
-  progressTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' },
+  progressTrack: { height: 6, backgroundColor: T.profileCard.glass, borderRadius: 3, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: T.accent, borderRadius: 3 },
-  progressLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '700' },
+  progressLabel: { color: T.profileCard.textSoft, fontSize: 11, fontWeight: '700' },
 
   // Hızlı Erişim
   sectionTitle: { color: T.textDark, fontSize: 18, fontWeight: '900', marginBottom: 14 },
@@ -647,7 +647,7 @@ const s = StyleSheet.create({
     position: 'absolute', top: 10, right: 10,
     backgroundColor: T.accent, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2,
   },
-  proBadgeText: { color: '#FFF', fontSize: 9, fontWeight: '900' },
+  proBadgeText: { color: T.onColor, fontSize: 9, fontWeight: '900' },
 
   // Arkadaşlar
   friendsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
@@ -691,7 +691,7 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: T.border,
   },
   badge: { position: 'absolute', top: -4, right: -6, backgroundColor: T.danger, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: T.background },
-  badgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: 'bold' },
+  badgeText: { color: T.onColor, fontSize: 9, fontWeight: 'bold' },
 
   modalSheet: { backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 28, padding: 25, gap: 15, ...Theme.shadows.medium },
   modalIconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: T.lightAmber, alignItems: 'center', justifyContent: 'center', marginBottom: 5, borderWidth: 1, borderColor: T.accent },
@@ -702,7 +702,7 @@ const s = StyleSheet.create({
   modalCancelBtn: { flex: 1, height: 56, borderRadius: 18, backgroundColor: T.softIndigo, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center' },
   modalCancelText: { fontSize: 15, fontWeight: 'bold', color: T.textDark },
   modalCreateBtn: { height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  modalCreateText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
+  modalCreateText: { fontSize: 15, fontWeight: '900', color: T.onColor, letterSpacing: 1 },
 
   actionBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   acceptBtn: { backgroundColor: T.softSuccess, borderWidth: 1, borderColor: T.success },

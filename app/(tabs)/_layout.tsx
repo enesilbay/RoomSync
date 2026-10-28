@@ -176,7 +176,7 @@ export default function TabLayout() {
         name: 'default',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
+        lightColor: C.notification.lightColor,
       });
     }
 
@@ -199,7 +199,7 @@ export default function TabLayout() {
           paddingBottom: 8,
           paddingTop: 8,
           elevation: 10,
-          shadowColor: '#000',
+          shadowColor: C.shadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
           shadowRadius: 15,

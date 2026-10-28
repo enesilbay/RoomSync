@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   inputErrorText: { color: T.danger, fontSize: 11, fontWeight: '700', marginTop: 4 },
   alertBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: T.overlayDark,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
   },
   alertBtnCancel: { backgroundColor: T.background, borderWidth: 1, borderColor: T.border },
   alertBtnCancelText: { color: T.textDark, fontWeight: '800', fontSize: 14 },
-  alertBtnConfirmText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
+  alertBtnConfirmText: { color: T.onColor, fontWeight: '900', fontSize: 14 },
   emptyCard: { alignItems: 'center', paddingVertical: 32, paddingHorizontal: 20 },
   emptyIconBox: {
     width: 54,
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 16, fontWeight: '900', color: T.textDark, textAlign: 'center', marginBottom: 6 },
   emptyMessage: { fontSize: 13, fontWeight: '600', color: T.textMuted, textAlign: 'center', lineHeight: 18 },
   emptyBtn: { marginTop: 16, backgroundColor: T.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 },
-  emptyBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
+  emptyBtnText: { color: T.onColor, fontWeight: '800', fontSize: 13 },
   summaryStrip: {
     flexDirection: 'row',
     backgroundColor: T.surface,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   summaryDivider: { width: 1, height: 26, backgroundColor: T.border },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.62)',
+    backgroundColor: T.overlayDarkSoft,
     justifyContent: 'flex-end',
   },
   modalSheet: {

@@ -300,11 +300,11 @@ export default function AuthScreen() {
                       style={s.btn}
                     >
                       {isLoading ? (
-                        <ActivityIndicator color="#FFFFFF" />
+                        <ActivityIndicator color={T.onColor} />
                       ) : (
                         <>
                           <Text style={s.btnText}>HESABI DOĞRULA VE BAŞLA</Text>
-                          <FontAwesome5 solid name="check-circle" size={13} color="#FFFFFF" />
+                          <FontAwesome5 solid name="check-circle" size={13} color={T.onColor} />
                         </>
                       )}
                     </TouchableOpacity>
@@ -347,13 +347,13 @@ export default function AuthScreen() {
                       style={s.btn}
                     >
                       {isLoading ? (
-                        <ActivityIndicator color="#FFFFFF" />
+                        <ActivityIndicator color={T.onColor} />
                       ) : (
                         <>
                           <Text style={s.btnText}>
                             {isForgotPassword ? 'KOD GÖNDER' : (isResetPassword ? 'ŞİFREYİ GÜNCELLE' : (isLogin ? 'GİRİŞ YAP' : 'HESAP OLUŞTUR'))}
                           </Text>
-                          <FontAwesome5 solid name="arrow-right" size={13} color="#FFFFFF" />
+                          <FontAwesome5 solid name="arrow-right" size={13} color={T.onColor} />
                         </>
                       )}
                     </TouchableOpacity>
@@ -459,7 +459,7 @@ const s = StyleSheet.create({
     marginTop: 6,
     ...Theme.shadows.medium,
   },
-  btnText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1.2 },
+  btnText: { fontSize: 15, fontWeight: '900', color: T.onColor, letterSpacing: 1.2 },
 
   switchRow: { marginTop: 22, alignItems: 'center' },
   switchText: { fontSize: 13, color: T.textMuted, fontWeight: '500' },

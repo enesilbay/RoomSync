@@ -780,7 +780,7 @@ export default function SensorScreen() {
             colors={focusRequested && pomodoroRunning ? [T.success, T.success] : [T.primary, T.secondary]}
             style={s.focusStartGrad}
           >
-            <FontAwesome5 solid name={focusRequested && pomodoroRunning ? 'check-circle' : 'bullseye'} size={16} color="#FFFFFF" />
+            <FontAwesome5 solid name={focusRequested && pomodoroRunning ? 'check-circle' : 'bullseye'} size={16} color={T.onColor} />
             <Text style={s.focusStartText}>
               {focusRequested && pomodoroRunning ? 'Odaklanma Hazır' : 'Odaklanmayı Başlat'}
             </Text>
@@ -812,7 +812,7 @@ export default function SensorScreen() {
               </TouchableOpacity>
               <TouchableOpacity onPress={togglePomodoro}>
                 <LinearGradient colors={pomodoroRunning ? [T.border, T.border] : [T.primary, T.secondary]} style={s.pomPlayBtn}>
-                  <FontAwesome5 solid name={pomodoroRunning ? "pause" : "play"} size={16} color={pomodoroRunning ? T.textDark : '#FFFFFF'} />
+                  <FontAwesome5 solid name={pomodoroRunning ? "pause" : "play"} size={16} color={pomodoroRunning ? T.textDark : T.onColor} />
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -852,8 +852,8 @@ export default function SensorScreen() {
               const active = (volumes[sItem.key] || 0) > 0;
               return (
                 <TouchableOpacity key={sItem.key} onPress={() => handleSingleSoundSelect(sItem.key)} style={[s.soundTile, active && s.soundTileActive]}>
-                  <FontAwesome5 solid name={sItem.icon} size={20} color={active ? '#FFFFFF' : T.textMuted} />
-                  <Text style={[s.soundText, active && { color: '#FFFFFF' }]}>{sItem.label}</Text>
+                  <FontAwesome5 solid name={sItem.icon} size={20} color={active ? T.onColor : T.textMuted} />
+                  <Text style={[s.soundText, active && { color: T.onColor }]}>{sItem.label}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -909,7 +909,7 @@ export default function SensorScreen() {
                     onPress={() => sendNudge(Number(friend.id), friend.fullName?.split(' ')[0] || 'Arkadaş')}
                     style={s.inviteBtn}
                   >
-                    <FontAwesome5 solid name="paper-plane" size={11} color="#FFFFFF" />
+                    <FontAwesome5 solid name="paper-plane" size={11} color={T.onColor} />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -1022,7 +1022,7 @@ export default function SensorScreen() {
               />
               <TouchableOpacity onPress={sendMessage} style={s.sendBtn}>
                 <LinearGradient colors={[T.primary, T.secondary]} style={s.sendBtnGrad}>
-                  <FontAwesome5 solid name="paper-plane" size={14} color="#FFFFFF" />
+                  <FontAwesome5 solid name="paper-plane" size={14} color={T.onColor} />
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -1033,7 +1033,7 @@ export default function SensorScreen() {
       {!chatVisible && (
         <TouchableOpacity style={s.fab} onPress={toggleChat}>
           <LinearGradient colors={[T.primary, T.secondary]} style={s.fabGrad}>
-            <FontAwesome5 solid name="comment-dots" size={22} color="#FFFFFF" />
+            <FontAwesome5 solid name="comment-dots" size={22} color={T.onColor} />
           </LinearGradient>
         </TouchableOpacity>
       )}
@@ -1068,8 +1068,8 @@ export default function SensorScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 {isPremium && (
                   <TouchableOpacity onPress={broadcastAtmosphere} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: T.primary, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 }}>
-                    <FontAwesome5 name="broadcast-tower" size={10} color="#FFF" />
-                    <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '800' }}>YAYINLA</Text>
+                    <FontAwesome5 name="broadcast-tower" size={10} color={T.onColor} />
+                    <Text style={{ color: T.onColor, fontSize: 10, fontWeight: '800' }}>YAYINLA</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity onPress={() => setShowMixer(false)} style={{ padding: 5 }}>
@@ -1133,7 +1133,7 @@ const s = StyleSheet.create({
   focusStartBtn: { borderRadius: 18, overflow: 'hidden', marginTop: -12, marginBottom: 24, ...Theme.shadows.medium },
   focusStartBtnActive: { opacity: 0.88 },
   focusStartGrad: { minHeight: 54, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 18 },
-  focusStartText: { color: '#FFFFFF', fontSize: 15, fontWeight: '900' },
+  focusStartText: { color: T.onColor, fontSize: 15, fontWeight: '900' },
   
   section: { marginBottom: 28 },
   sectionLabel: { fontSize: 12, color: T.textMuted, fontWeight: '800', letterSpacing: 1.5, marginBottom: 12 },
@@ -1174,7 +1174,7 @@ const s = StyleSheet.create({
   bubbleMe: { alignSelf: 'flex-end', backgroundColor: T.softIndigo, borderBottomRightRadius: 4, borderWidth: 1, borderColor: T.primary },
   bubbleOther: { alignSelf: 'flex-start', backgroundColor: T.background, borderBottomLeftRadius: 4, borderWidth: 1, borderColor: T.border },
   messageText: { color: T.textDark, fontSize: 14 },
-  messageTextOnColor: { color: '#FFFFFF' },
+  messageTextOnColor: { color: T.onColor },
   bubbleUserRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 7 },
   bubbleUser: { fontSize: 11, color: T.accent, fontWeight: '800' },
   equippedNameIcon: { fontSize: 11 },
@@ -1192,7 +1192,7 @@ const s = StyleSheet.create({
   fab: { position: 'absolute', bottom: 115, right: 22, width: 64, height: 64, borderRadius: 32, overflow: 'hidden', elevation: 12, shadowColor: T.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 15 },
   fabGrad: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: T.overlay, justifyContent: 'center', alignItems: 'center' },
   modalSheet: { backgroundColor: T.surface, padding: 30, borderRadius: 28, width: '85%', borderWidth: 1, borderColor: T.border, ...Theme.shadows.medium },
   modalTitle: { color: T.textDark, fontSize: 20, fontWeight: '900', marginBottom: 20, textAlign: 'center' },
   modalOpt: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1, borderColor: T.border, alignItems: 'center' },

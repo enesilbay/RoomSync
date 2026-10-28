@@ -23,11 +23,11 @@ type UserProfile = {
 };
 
 const COLORS = [
-  { id: '#4F46E5', name: 'RoomSync Mavisi', price: 0 },
-  { id: '#059669', name: 'Zümrüt Yeşili', price: 100 },
-  { id: '#E11D48', name: 'Yakut Kırmızısı', price: 150 },
-  { id: '#D97706', name: 'Kehribar Sarısı', price: 150 },
-  { id: '#7C3AED', name: 'Ametist Moru', price: 200 },
+  { id: T.shopBubble.roomsyncBlue, name: 'RoomSync Mavisi', price: 0 },
+  { id: T.shopBubble.emerald, name: 'Zümrüt Yeşili', price: 100 },
+  { id: T.shopBubble.ruby, name: 'Yakut Kırmızısı', price: 150 },
+  { id: T.shopBubble.amber, name: 'Kehribar Sarısı', price: 150 },
+  { id: T.shopBubble.amethyst, name: 'Ametist Moru', price: 200 },
 ];
 
 const ICONS = [
@@ -44,7 +44,7 @@ const PROFILE_FRAMES = [
   { id: 'gold', name: 'Altın Halka', desc: 'Parlak başarı çerçevesi.', price: 150, color: T.accent },
   { id: 'emerald', name: 'Zümrüt Odak', desc: 'Yeşil odak çerçevesi.', price: 180, color: T.success },
   { id: 'ruby', name: 'Yakut Seri', desc: 'Kırmızı seri çerçevesi.', price: 220, color: T.danger },
-  { id: 'cosmic', name: 'Kozmik Lounge', desc: 'Mor premium çerçeve hissi.', price: 320, color: '#7C3AED' },
+  { id: 'cosmic', name: 'Kozmik Lounge', desc: 'Mor premium çerçeve hissi.', price: 320, color: T.frame.cosmic },
 ];
 
 export default function ShopScreen() {
@@ -163,7 +163,7 @@ export default function ShopScreen() {
         <View style={styles.itemRight}>
           {isEquipped ? (
             <View style={styles.equippedBadge}>
-              <FontAwesome5 name="check" size={12} color="#FFF" />
+              <FontAwesome5 name="check" size={12} color={T.onColor} />
               <Text style={styles.equippedText}>Kuşanıldı</Text>
             </View>
           ) : isOwned ? (
@@ -172,7 +172,7 @@ export default function ShopScreen() {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.buyBtn} onPress={() => handleBuy('color', item.id, item.price)} disabled={processing}>
-              <FontAwesome5 name="shopping-cart" size={12} color="#FFF" />
+              <FontAwesome5 name="shopping-cart" size={12} color={T.onColor} />
               <Text style={styles.buyBtnText}>Al</Text>
             </TouchableOpacity>
           )}
@@ -200,7 +200,7 @@ export default function ShopScreen() {
         <View style={styles.itemRight}>
           {isEquipped ? (
             <View style={styles.equippedBadge}>
-              <FontAwesome5 name="check" size={12} color="#FFF" />
+              <FontAwesome5 name="check" size={12} color={T.onColor} />
               <Text style={styles.equippedText}>Kuşanıldı</Text>
             </View>
           ) : isOwned ? (
@@ -209,7 +209,7 @@ export default function ShopScreen() {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.buyBtn} onPress={() => handleBuy('icon', item.id, item.price)} disabled={processing}>
-              <FontAwesome5 name="shopping-cart" size={12} color="#FFF" />
+              <FontAwesome5 name="shopping-cart" size={12} color={T.onColor} />
               <Text style={styles.buyBtnText}>Al</Text>
             </TouchableOpacity>
           )}
@@ -239,7 +239,7 @@ export default function ShopScreen() {
         <View style={styles.itemRight}>
           {isEquipped ? (
             <View style={styles.equippedBadge}>
-              <FontAwesome5 name="check" size={12} color="#FFF" />
+              <FontAwesome5 name="check" size={12} color={T.onColor} />
               <Text style={styles.equippedText}>Kuşanıldı</Text>
             </View>
           ) : isOwned ? (
@@ -248,7 +248,7 @@ export default function ShopScreen() {
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.buyBtn} onPress={() => handleBuy('profileFrame', item.id, item.price)} disabled={processing}>
-              <FontAwesome5 name="shopping-cart" size={12} color="#FFF" />
+              <FontAwesome5 name="shopping-cart" size={12} color={T.onColor} />
               <Text style={styles.buyBtnText}>Al</Text>
             </TouchableOpacity>
           )}
@@ -313,9 +313,9 @@ const styles = StyleSheet.create({
   itemOwned: { color: T.textMuted, fontSize: 13, fontWeight: '700', marginTop: 2, fontStyle: 'italic' },
   itemRight: {},
   buyBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: T.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
-  buyBtnText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
+  buyBtnText: { color: T.onColor, fontSize: 13, fontWeight: '800' },
   equipBtn: { backgroundColor: T.surface, borderWidth: 1, borderColor: T.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   equipBtnText: { color: T.primary, fontSize: 13, fontWeight: '800' },
   equippedBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: T.success, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12 },
-  equippedText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
+  equippedText: { color: T.onColor, fontSize: 13, fontWeight: '800' },
 });

@@ -99,7 +99,7 @@ export default function LeaderboardScreen() {
                   {index === 0 ? (
                     <FontAwesome5 solid name="crown" size={22} color={T.accent} />
                   ) : index < 3 ? (
-                    <FontAwesome5 solid name="medal" size={21} color={index === 1 ? '#94A3B8' : '#B45309'} />
+                    <FontAwesome5 solid name="medal" size={21} color={index === 1 ? T.medal.silver : T.medal.bronze} />
                   ) : (
                     <Text style={styles.rankText}>{index + 1}</Text>
                   )}
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   tabButton: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 12 },
   tabActive: { backgroundColor: T.primary },
   tabText: { color: T.textMuted, fontSize: 14, fontWeight: '700' },
-  tabTextActive: { color: '#FFF', fontWeight: '900' },
+  tabTextActive: { color: T.onColor, fontWeight: '900' },
   list: { gap: 12, paddingBottom: 110 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   topRow: { backgroundColor: T.lightAmber, borderColor: T.accent },

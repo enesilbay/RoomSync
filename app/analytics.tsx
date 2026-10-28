@@ -105,8 +105,8 @@ export default function AnalyticsScreen() {
   const chartConfig = {
     backgroundGradientFromOpacity: 0,
     backgroundGradientToOpacity: 0,
-    color: (opacity = 1) => `rgba(26, 35, 126, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
+    color: (opacity = 1) => T.chart.line(opacity),
+    labelColor: (opacity = 1) => T.chart.label(opacity),
     propsForDots: { r: '5', strokeWidth: '2', stroke: T.accent },
     propsForBackgroundLines: { strokeDasharray: '', stroke: T.border },
   };
@@ -169,7 +169,7 @@ export default function AnalyticsScreen() {
                       style={[
                         styles.hourBox,
                         {
-                          backgroundColor: value > 0 ? `rgba(255, 193, 7, ${0.25 + opacity * 0.65})` : T.softIndigo,
+                          backgroundColor: value > 0 ? T.chart.heat(0.25 + opacity * 0.65) : T.softIndigo,
                           borderColor: value > 0 ? T.accent : T.border,
                         },
                       ]}
@@ -217,5 +217,5 @@ const styles = StyleSheet.create({
   stateCard: { alignItems: 'center', gap: 12, paddingVertical: 34, marginBottom: 16 },
   stateTitle: { color: T.textDark, fontSize: 17, fontWeight: '900', textAlign: 'center' },
   primaryBtn: { backgroundColor: T.primary, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
-  primaryBtnText: { color: '#FFFFFF', fontWeight: '900' },
+  primaryBtnText: { color: T.onColor, fontWeight: '900' },
 });

@@ -415,7 +415,7 @@ export default function LobbiesScreen() {
         activeOpacity={0.85}
       >
         <LinearGradient colors={[T.primary, T.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.fabGrad}>
-          <FontAwesome5 solid name={isPremium ? "plus" : "lock"} size={14} color="#FFFFFF" />
+          <FontAwesome5 solid name={isPremium ? "plus" : "lock"} size={14} color={T.onColor} />
           <Text style={s.fabText}>ODA KUR</Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -452,7 +452,7 @@ export default function LobbiesScreen() {
                 <Text style={{ color: T.textDark, fontSize: 15, fontWeight: 'bold' }}>Gizli Oda (Kilitli)</Text>
                 <Switch
                   trackColor={{ false: T.border, true: T.primary }}
-                  thumbColor={isPrivate ? T.textDark : '#94A3B8'}
+                  thumbColor={isPrivate ? T.textDark : T.switchThumbOff}
                   onValueChange={setIsPrivate}
                   value={isPrivate}
                 />
@@ -463,7 +463,7 @@ export default function LobbiesScreen() {
                   <Text style={{ color: T.accent, fontSize: 15, fontWeight: 'bold' }}>Elite Oda</Text>
                   <Switch
                     trackColor={{ false: T.border, true: T.primary }}
-                    thumbColor={isPremiumOnly ? T.textDark : '#94A3B8'}
+                    thumbColor={isPremiumOnly ? T.textDark : T.switchThumbOff}
                     onValueChange={setIsPremiumOnly}
                     value={isPremiumOnly}
                   />
@@ -527,7 +527,7 @@ export default function LobbiesScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleVerifyPassword} disabled={isVerifying} style={{ flex: 1 }}>
                   <LinearGradient colors={[T.primary, T.secondary]} style={mdl.createBtn}>
-                    {isVerifying ? <ActivityIndicator color="#FFFFFF" /> : <Text style={mdl.createText}>Giriş Yap</Text>}
+                    {isVerifying ? <ActivityIndicator color={T.onColor} /> : <Text style={mdl.createText}>Giriş Yap</Text>}
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -555,7 +555,7 @@ const s = StyleSheet.create({
   catChipActive: { backgroundColor: T.primary, borderColor: T.primary },
   catChipInactive: { backgroundColor: T.surface, borderColor: T.border },
   catText: { fontSize: 13, fontWeight: 'bold' },
-  catTextActive: { color: '#FFF' },
+  catTextActive: { color: T.onColor },
   catTextInactive: { color: T.textMuted },
   
   summaryCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderRadius: 20, paddingVertical: 16, marginBottom: 16, borderWidth: 1, borderColor: T.border, ...Theme.shadows.soft },
@@ -577,7 +577,7 @@ const s = StyleSheet.create({
   
   fab: { position: 'absolute', bottom: 110, right: 22, borderRadius: 18, overflow: 'hidden', elevation: 12, shadowColor: T.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.22, shadowRadius: 15 },
   fabGrad: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 22, paddingVertical: 16 },
-  fabText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1.2 },
+  fabText: { fontSize: 15, fontWeight: '900', color: T.onColor, letterSpacing: 1.2 },
 });
 
 const hdr = StyleSheet.create({
@@ -587,15 +587,15 @@ const hdr = StyleSheet.create({
 
 const card = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderRadius: 20, padding: 16, gap: 16, borderWidth: 1, borderColor: T.border, ...Theme.shadows.soft },
-  eliteWrap: { borderColor: '#F3D57A', backgroundColor: '#FFFCF2' },
+  eliteWrap: { borderColor: T.elite.border, backgroundColor: T.elite.background },
   iconBox: { width: 54, height: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border, backgroundColor: T.softIndigo },
-  eliteIconBox: { backgroundColor: T.lightAmber, borderColor: '#F3D57A' },
+  eliteIconBox: { backgroundColor: T.lightAmber, borderColor: T.elite.border },
   body: { flex: 1 },
   name: { fontSize: 17, fontWeight: '800', color: T.textDark, marginBottom: 4 },
   desc: { fontSize: 13, color: T.textMuted, marginBottom: 10 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   metaPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: T.background, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, borderWidth: 1, borderColor: T.border },
-  elitePill: { backgroundColor: T.lightAmber, borderColor: '#F3D57A' },
+  elitePill: { backgroundColor: T.lightAmber, borderColor: T.elite.border },
   eliteMetaText: { color: T.primary },
   dot: { width: 8, height: 8, borderRadius: 4 },
   metaText: { fontSize: 12, color: T.textMuted, fontWeight: '700' },
@@ -603,7 +603,7 @@ const card = StyleSheet.create({
 });
 
 const mdl = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'flex-end' },
+  overlay: { flex: 1, backgroundColor: T.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 25, paddingBottom: Platform.OS === 'ios' ? 40 : 25, gap: 15, ...Theme.shadows.medium },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: T.border, alignSelf: 'center', marginBottom: 10 },
   iconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: T.lightAmber, alignItems: 'center', justifyContent: 'center', marginBottom: 5, borderWidth: 1, borderColor: T.accent },
@@ -614,7 +614,7 @@ const mdl = StyleSheet.create({
   cancelBtn: { flex: 1, height: 56, borderRadius: 18, backgroundColor: T.softIndigo, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center' },
   cancelText: { fontSize: 15, fontWeight: 'bold', color: T.textDark },
   createBtn: { height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  createText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
+  createText: { fontSize: 15, fontWeight: '900', color: T.onColor, letterSpacing: 1 },
 });
 
 const bg = StyleSheet.create({

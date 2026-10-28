@@ -263,7 +263,7 @@ export default function ProfileScreen() {
             imageStyle={styles.avatarImage}
           >
             <View style={styles.cameraBadge}>
-              {isUploading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <FontAwesome5 solid name="camera" size={13} color="#FFFFFF" />}
+              {isUploading ? <ActivityIndicator size="small" color={T.onColor} /> : <FontAwesome5 solid name="camera" size={13} color={T.onColor} />}
             </View>
           </FramedAvatar>
         </TouchableOpacity>
@@ -337,9 +337,9 @@ export default function ProfileScreen() {
 
       <TouchableOpacity onPress={() => router.push('/shop' as any)} activeOpacity={0.86}>
         <SoftCard style={[styles.analyticsButton, { backgroundColor: T.primary, marginBottom: 16 }]}>
-          <FontAwesome5 solid name="shopping-cart" size={16} color="#FFF" />
-          <Text style={[styles.analyticsText, { color: '#FFF' }]}>Magazaya Git (Shop)</Text>
-          <FontAwesome5 solid name="chevron-right" size={12} color="#FFF" />
+          <FontAwesome5 solid name="shopping-cart" size={16} color={T.onColor} />
+          <Text style={[styles.analyticsText, { color: T.onColor }]}>Magazaya Git (Shop)</Text>
+          <FontAwesome5 solid name="chevron-right" size={12} color={T.onColor} />
         </SoftCard>
       </TouchableOpacity>
 
@@ -453,11 +453,11 @@ export default function ProfileScreen() {
             <Text style={styles.secondaryBtnText}>Iptal</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={saveProfile} disabled={isSaving} style={styles.primaryBtn}>
-            {isSaving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryBtnText}>Kaydet</Text>}
+            {isSaving ? <ActivityIndicator color={T.onColor} /> : <Text style={styles.primaryBtnText}>Kaydet</Text>}
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-          <FontAwesome5 solid name="sign-out-alt" size={15} color="#E53935" />
+          <FontAwesome5 solid name="sign-out-alt" size={15} color={T.logout.foreground} />
           <Text style={styles.logoutBtnText}>Cikis Yap</Text>
         </TouchableOpacity>
       </DarkSheetModal>
@@ -527,9 +527,9 @@ const styles = StyleSheet.create({
   premiumActionText: { color: T.accent, fontSize: 12, fontWeight: '900' },
   sheetActions: { flexDirection: 'row', gap: 10 },
   primaryBtn: { flex: 1, backgroundColor: T.primary, borderRadius: 14, alignItems: 'center', justifyContent: 'center', minHeight: 48, paddingHorizontal: 16 },
-  primaryBtnText: { color: '#FFFFFF', fontWeight: '900' },
+  primaryBtnText: { color: T.onColor, fontWeight: '900' },
   secondaryBtn: { flex: 1, backgroundColor: T.softIndigo, borderRadius: 14, alignItems: 'center', justifyContent: 'center', minHeight: 48, borderWidth: 1, borderColor: T.border },
   secondaryBtnText: { color: T.textDark, fontWeight: '900' },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 1, borderColor: '#FFCDD2', backgroundColor: '#FFF5F5' },
-  logoutBtnText: { color: '#E53935', fontWeight: '900', fontSize: 15 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 1, borderColor: T.logout.border, backgroundColor: T.logout.background },
+  logoutBtnText: { color: T.logout.foreground, fontWeight: '900', fontSize: 15 },
 });

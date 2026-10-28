@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, ImageStyle, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { C } from '@/src/theme';
 
 type Palette = {
   border: string;
@@ -37,7 +38,7 @@ export function getProfileFrameColor(frameId: string | null | undefined, colors:
     case 'ruby':
       return colors.danger;
     case 'cosmic':
-      return '#7C3AED';
+      return C.frame.cosmic;
     default:
       return colors.border;
   }
