@@ -5,7 +5,7 @@ import type { NudgeToastState } from '../types';
 // Nudge (Dürtme) toast state'leri
 export function useNudgeToast() {
   const [nudgeToast, setNudgeToast] = useState<NudgeToastState | null>(null);
-  const nudgeAnim = useRef(new Animated.Value(0)).current;
+  const [nudgeAnim] = useState(() => new Animated.Value(0));
   const nudgeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Nudge: Toast animasyonunu göster

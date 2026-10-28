@@ -9,13 +9,13 @@ export type SensorPlatform = 'ios' | 'android' | 'web';
  * Bu modülün normalize kuralı: yüzü yukarı düz duran telefon ⇒ z ≈ -1 g, yüzüstü ⇒ z ≈ +1 g
  * (CoreMotion kuralı; iOS ham verisi zaten böyle).
  *
- * Kanıt (node_modules/expo-sensors, v15):
- * - iOS  ios/AccelerometerModule.swift:34-36 → CMAccelerometerData.acceleration olduğu gibi, g cinsinden
+ * Kanıt (node_modules/expo-sensors, v58.0.4; v15 ile aynı davranış):
+ * - iOS  ios/AccelerometerModule.swift:33-38 → CMAccelerometerData.acceleration olduğu gibi, g cinsinden
  *   gönderiliyor. Apple kuralı: yüzü yukarı masadaki cihazda z = -1.0.
  * - Android android/.../modules/AccelerometerModule.kt:18-20 → Sensor.TYPE_ACCELEROMETER değeri
  *   SensorManager.GRAVITY_EARTH'e (9.80665) bölünüyor, yani g cinsinden ama işaret değişmiyor.
  *   Android kuralı (tepki kuvveti): yüzü yukarı masadaki cihazda z = +9.81 → +1 g. Yani iOS'un tersi.
- * - Expo da bunu biliyor: DeviceMotion'da Android android/.../DeviceMotionModule.kt:228-230
+ * - Expo da bunu biliyor: DeviceMotion'da Android android/.../DeviceMotionModule.kt:244-246
  *   `values - 2 * gravity` ile vektörü tersine çevirip iOS'un ios/DeviceMotionModule.swift:96-98
  *   kuralına eşitliyor. Accelerometer modülünde bu düzeltme yapılmıyor.
  * - Web src/ExponentAccelerometer.web.ts:24-29 ivme değil, deviceorientation açılarını (radyan)

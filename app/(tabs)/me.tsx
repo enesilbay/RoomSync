@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator, Animated, Modal, ScrollView,
   StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, RefreshControl, Image
@@ -87,8 +87,8 @@ export default function MeScreen() {
   const [isSocialModalVisible, setIsSocialModalVisible] = useState(false);
   const [friendUsername, setFriendUsername] = useState('');
   const [isSendingFriendReq, setIsSendingFriendReq] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [slideAnim] = useState(() => new Animated.Value(20));
 
   const fetchData = useCallback(async () => {
     try {

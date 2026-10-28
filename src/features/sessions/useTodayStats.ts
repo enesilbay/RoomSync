@@ -23,16 +23,22 @@ export function useTodayStats(): TodayStats {
   // Yalnızca en son isteğin sonucu yazılsın (yarış koruması).
   const requestRef = useRef(0);
 
-  const refresh = useCallback(async () => {
+  // setState yalnızca promise geri çağrılarında (effect içinde senkron setState yok).
+  const refresh = useCallback((): Promise<void> => {
     const requestId = ++requestRef.current;
-    try {
-      const next = await getTodayTotals(Date.now());
-      if (mountedRef.current && requestId === requestRef.current) setTotals(next);
-    } catch (err) {
-      logger.warn('[sessions] bugünün istatistikleri okunamadı', err);
-    } finally {
-      if (mountedRef.current && requestId === requestRef.current) setLoading(false);
-    }
+    const isLatest = () => mountedRef.current && requestId === requestRef.current;
+    return getTodayTotals(Date.now())
+      .then(
+        (next) => {
+          if (isLatest()) setTotals(next);
+        },
+        (err: unknown) => {
+          logger.warn('[sessions] bugünün istatistikleri okunamadı', err);
+        },
+      )
+      .finally(() => {
+        if (isLatest()) setLoading(false);
+      });
   }, []);
 
   useEffect(() => {

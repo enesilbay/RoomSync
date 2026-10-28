@@ -3,10 +3,11 @@
  * Expo Router typed routes tiplerini (.expo/types/router.d.ts) dev server
  * açmadan, etkileşimsiz olarak üretir. CI'da (Linux) ve yerelde çalışır.
  *
- * `expo start` bu dosyayı @expo/cli -> expo-router/build/typed-routes üzerinden
- * üretir. Burada aynı üreticiyi (getTypedRoutesDeclarationFile) aynı
- * require.context ponyfill'i ve aynı ignore regex'i ile doğrudan çağırıyoruz;
- * böylece çıktı `expo start`ın ürettiğiyle birebir aynıdır.
+ * `expo start` bu dosyayı @expo/cli -> @expo/router-server/build/typed-routes
+ * üzerinden üretir (SDK 55+; öncesinde expo-router/build/typed-routes). Burada
+ * aynı üreticiyi (getTypedRoutesDeclarationFile) aynı require.context
+ * ponyfill'i (expo-router/internal/testing) ve aynı ignore regex'i ile
+ * doğrudan çağırıyoruz; böylece çıktı `expo start`ın ürettiğiyle birebir aynıdır.
  *
  * Ayrıca `expo start`ın yaptığı gibi eksikse `expo-env.d.ts` dosyasını yazar
  * (gitignore'da olduğu için CI'da bulunmaz, tsconfig onu include eder).
@@ -22,10 +23,20 @@ function resolveFromProject(id) {
   return require.resolve(id, { paths: [projectRoot] });
 }
 
-function loadExpoConfig() {
-  // @expo/config, `expo` paketinin bağımlılığıdır; onun konumundan çözümle.
+// @expo/config ve @expo/cli, `expo` paketinin bağımlılığıdır; onun konumundan çözümle.
+function resolveFromExpo(id) {
   const expoPkgDir = path.dirname(resolveFromProject('expo/package.json'));
-  const configPath = require.resolve('@expo/config', { paths: [expoPkgDir, projectRoot] });
+  return require.resolve(id, { paths: [expoPkgDir, projectRoot] });
+}
+
+// @expo/router-server, @expo/cli'nin bağımlılığıdır; CLI ile aynı kopyayı kullan.
+function resolveFromExpoCli(id) {
+  const cliPkgDir = path.dirname(resolveFromExpo('@expo/cli/package.json'));
+  return require.resolve(id, { paths: [cliPkgDir, projectRoot] });
+}
+
+function loadExpoConfig() {
+  const configPath = resolveFromExpo('@expo/config');
   const { getConfig } = require(configPath);
   return getConfig(projectRoot, { skipSDKVersionRequirement: true }).exp;
 }
@@ -53,11 +64,9 @@ function main() {
   process.env.EXPO_ROUTER_APP_ROOT = routerDirectory;
 
   const { EXPO_ROUTER_CTX_IGNORE } = require(resolveFromProject('expo-router/_ctx-shared'));
-  const requireContext = require(
-    resolveFromProject('expo-router/build/testing-library/require-context-ponyfill')
-  ).default;
+  const { requireContext } = require(resolveFromProject('expo-router/internal/testing'));
   const { getTypedRoutesDeclarationFile } = require(
-    resolveFromProject('expo-router/build/typed-routes/generate')
+    resolveFromExpoCli('@expo/router-server/build/typed-routes/generate')
   );
 
   const ctx = requireContext(routerDirectory, true, EXPO_ROUTER_CTX_IGNORE);

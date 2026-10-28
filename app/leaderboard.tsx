@@ -21,6 +21,20 @@ type Leader = {
   isPremium?: boolean;
 };
 
+// Seçili sekmenin liderlik tablosunu getirir; hata durumunda reddeder.
+async function requestLeaderboard(tab: 'global' | 'friends'): Promise<Leader[]> {
+  const token = await AsyncStorage.getItem('access_token');
+  const endpoint = tab === 'global' ? '/users/leaderboard' : '/users/friends-leaderboard';
+  const response = await fetch(apiUrl(endpoint), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw new Error('Liderlik alınamadı.');
+  }
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
+}
+
 export default function LeaderboardScreen() {
   const router = useRouter();
   const [tab, setTab] = useState<'global' | 'friends'>('global');
@@ -28,31 +42,32 @@ export default function LeaderboardScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchLeaderboard = useCallback(async () => {
+  // Sekme değişince render sırasında yükleniyor durumuna geç (effect içinde senkron setState yok).
+  const [loadingTab, setLoadingTab] = useState(tab);
+  if (loadingTab !== tab) {
+    setLoadingTab(tab);
     setIsLoading(true);
     setError('');
-    try {
-      const token = await AsyncStorage.getItem('access_token');
-      const endpoint = tab === 'global' ? '/users/leaderboard' : '/users/friends-leaderboard';
-      const response = await fetch(apiUrl(endpoint), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error('Liderlik alınamadı.');
-      }
-      const data = await response.json();
-      setLeaders(Array.isArray(data) ? data : []);
-    } catch {
-      setError('Liderlik tablosu yüklenemedi.');
-      setLeaders([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [tab]);
+  }
+
+  // setState yalnızca promise geri çağrılarında.
+  const fetchLeaderboard = useCallback(
+    () =>
+      requestLeaderboard(tab)
+        .then(
+          (data) => setLeaders(data),
+          () => {
+            setError('Liderlik tablosu yüklenemedi.');
+            setLeaders([]);
+          },
+        )
+        .finally(() => setIsLoading(false)),
+    [tab],
+  );
 
   // Sekme değişince tabloyu yeniden yükle
   useEffect(() => {
-    fetchLeaderboard();
+    void fetchLeaderboard();
   }, [fetchLeaderboard]);
 
   return (

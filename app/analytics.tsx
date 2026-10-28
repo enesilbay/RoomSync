@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -17,44 +17,59 @@ type AnalyticsRecord = {
   hourlyDistribution?: number[];
 };
 
+// Oturumdaki kullanıcının analitik kayıtlarını getirir; hata durumunda reddeder.
+async function requestAnalytics(): Promise<AnalyticsRecord[]> {
+  const stored = await AsyncStorage.getItem('user_data');
+  const token = await AsyncStorage.getItem('access_token');
+  if (!stored || !token) {
+    throw new Error('Oturum bulunamadı.');
+  }
+
+  const user = JSON.parse(stored);
+  const res = await fetch(apiUrl(`/users/analytics/${user.id}`), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    throw new Error('Analitik alınamadı.');
+  }
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
 export default function AnalyticsScreen() {
   const router = useRouter();
   const [records, setRecords] = useState<AnalyticsRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchAnalytics = async () => {
+  // setState yalnızca promise geri çağrılarında (effect içinde senkron setState yok).
+  const loadAnalytics = useCallback(
+    () =>
+      requestAnalytics()
+        .then(
+          (data) => setRecords(data),
+          () => {
+            setError('Analitik verileri yüklenemedi.');
+            setRecords([]);
+          },
+        )
+        .finally(() => setIsLoading(false)),
+    [],
+  );
+
+  // "Tekrar dene": yükleniyor durumuna geç, sonra yükle.
+  const fetchAnalytics = () => {
     setIsLoading(true);
     setError('');
-    try {
-      const stored = await AsyncStorage.getItem('user_data');
-      const token = await AsyncStorage.getItem('access_token');
-      if (!stored || !token) {
-        throw new Error('Oturum bulunamadı.');
-      }
-
-      const user = JSON.parse(stored);
-      const res = await fetch(apiUrl(`/users/analytics/${user.id}`), {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        throw new Error('Analitik alınamadı.');
-      }
-
-      const data = await res.json();
-      setRecords(Array.isArray(data) ? data : []);
-    } catch {
-      setError('Analitik verileri yüklenemedi.');
-      setRecords([]);
-    } finally {
-      setIsLoading(false);
-    }
+    void loadAnalytics();
   };
 
+  // loadAnalytics kararlı (boş bağımlılık); yalnızca mount'ta çalışır.
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    void loadAnalytics();
+  }, [loadAnalytics]);
 
   const analytics = useMemo(() => {
     const today = new Date();

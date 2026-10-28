@@ -24,39 +24,55 @@ type Options = {
   isEliteRoom: boolean;
 };
 
+// Odanın sohbet geçmişini getirir; hata durumunda reddeder.
+async function requestChatHistory(roomName: SearchParam): Promise<ChatMessage[]> {
+  const token = await AsyncStorage.getItem('access_token');
+  const res = await fetch(apiUrl(`/messages/${roomName}`), {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  return data.map((m: ApiMessage) => ({
+    userId: m.user?.id,
+    fullName: m.user?.fullName || 'Bilinmeyen',
+    avatarUrl: m.user?.avatarUrl,
+    equippedProfileFrame: m.user?.equippedProfileFrame,
+    text: m.text,
+    type: m.type || 'text',
+    fileUrl: m.fileUrl,
+    isPremium: m.user?.isPremium || false,
+    equippedBubbleColor: m.user?.equippedBubbleColor,
+    equippedIcon: m.user?.equippedIcon,
+  }));
+}
+
 // Lobi sohbeti: geçmiş, mesaj gönderme, dosya/görsel yükleme ve çekmece animasyonu.
 export function useChat({ roomName, socketRef, safeFullName, isPremium, isEliteRoom }: Options) {
   const [chatVisible, setChatVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [chatList, setChatList] = useState<ChatMessage[]>([]);
-  const chatAnim = useRef(new Animated.Value(0)).current;
+  const [chatAnim] = useState(() => new Animated.Value(0));
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
 
-  const fetchChatHistory = useCallback(async () => {
-    setChatList([]); // Eski oda mesajlarını temizle
-    try {
-      const token = await AsyncStorage.getItem('access_token');
-      const res = await fetch(apiUrl(`/messages/${roomName}`), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setChatList(data.map((m: ApiMessage) => ({
-        userId: m.user?.id,
-        fullName: m.user?.fullName || 'Bilinmeyen',
-        avatarUrl: m.user?.avatarUrl,
-        equippedProfileFrame: m.user?.equippedProfileFrame,
-        text: m.text,
-        type: m.type || 'text',
-        fileUrl: m.fileUrl,
-        isPremium: m.user?.isPremium || false,
-        equippedBubbleColor: m.user?.equippedBubbleColor,
-        equippedIcon: m.user?.equippedIcon,
-      })));
-    } catch { logger.error("Geçmiş yüklenemedi"); }
-  }, [roomName]);
+  // Oda değişince eski oda mesajlarını render sırasında temizle (effect içinde senkron setState yok).
+  // Dizi parametrede kimlik her render değişebilir; URL ile aynı string anahtarı karşılaştır.
+  const roomKey = String(roomName);
+  const [historyRoom, setHistoryRoom] = useState(roomKey);
+  if (historyRoom !== roomKey) {
+    setHistoryRoom(roomKey);
+    setChatList([]);
+  }
+
+  // setState yalnızca promise geri çağrısında.
+  const fetchChatHistory = useCallback(
+    () =>
+      requestChatHistory(roomName).then(setChatList, () => {
+        logger.error("Geçmiş yüklenemedi");
+      }),
+    [roomName],
+  );
 
   useEffect(() => {
-    fetchChatHistory();
+    void fetchChatHistory();
   }, [fetchChatHistory]);
 
   const uploadFile = async (fileAsset: PickedAsset, explicitType: string = 'file') => {

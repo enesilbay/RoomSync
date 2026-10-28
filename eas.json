@@ -7,7 +7,8 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://studylounge-backend.onrender.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://studylounge-backend.onrender.com",
+        "EXPO_PUBLIC_USE_RN_FETCH": "1"
       },
       "android": {
         "buildType": "apk"
@@ -15,7 +16,8 @@
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://studylounge-backend.onrender.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://studylounge-backend.onrender.com",
+        "EXPO_PUBLIC_USE_RN_FETCH": "1"
       }
     }
   }

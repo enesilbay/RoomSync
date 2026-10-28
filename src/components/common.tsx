@@ -34,7 +34,7 @@ export function AppScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={T.background} />
+      <StatusBar barStyle="dark-content" />
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <View style={bg.orb1} />
         <View style={bg.orb2} />
