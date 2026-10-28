@@ -17,6 +17,7 @@ import { AppScreen, DarkSheetModal, IconButton, PageHeader, SoftCard } from '@/s
 import { FramedAvatar } from '@/src/components/FramedAvatar';
 import { C, Theme } from '@/src/theme';
 import { getRankInfo, getRankProgress } from '@/src/lib/rank';
+import { logger } from '@/src/lib/logger';
 
 const T = C;
 
@@ -140,7 +141,7 @@ export default function ProfileScreen() {
       
       const resText = await res.text();
       if (!res.ok) {
-        console.log('Upload error response:', resText);
+        logger.debug('Upload error response:', resText);
         throw new Error(`Avatar yuklenemedi: ${resText.substring(0, 100)}`);
       }
 
@@ -148,7 +149,7 @@ export default function ProfileScreen() {
       setUser(data.user);
       await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
     } catch (err: any) {
-      console.error(err);
+      logger.error(err);
       Alert.alert('Hata', err.message || 'Avatar yuklenemedi.');
     } finally {
       setIsUploading(false);

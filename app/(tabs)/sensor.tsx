@@ -22,6 +22,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { BACKEND_URL, apiUrl, assetUrl } from '@/src/lib/api';
 import { FramedAvatar } from '@/src/components/FramedAvatar';
 import { C, Theme } from '@/src/theme';
+import { logger } from '@/src/lib/logger';
 
 const { width, height } = Dimensions.get('window');
 const T = C;
@@ -216,7 +217,7 @@ export default function SensorScreen() {
         setIsPremium(data.user.isPremium === true);
       }
     } catch {
-      console.log('Kullanıcı tercihleri güncellenemedi');
+      logger.debug('Kullanıcı tercihleri güncellenemedi');
     }
   };
 
@@ -240,7 +241,7 @@ export default function SensorScreen() {
         equippedBubbleColor: m.user?.equippedBubbleColor,
         equippedIcon: m.user?.equippedIcon,
       })));
-    } catch (e) { console.error("Geçmiş yüklenemedi"); }
+    } catch (e) { logger.error("Geçmiş yüklenemedi"); }
   };
 
   const fetchOnlineFriends = async () => {
@@ -253,7 +254,7 @@ export default function SensorScreen() {
       const data = await res.json();
       setOnlineFriends((Array.isArray(data) ? data : []).filter((friend: Friend) => friend.isOnline));
     } catch {
-      console.log('Online arkadaşlar yüklenemedi');
+      logger.debug('Online arkadaşlar yüklenemedi');
     }
   };
 
@@ -267,7 +268,7 @@ export default function SensorScreen() {
       if (!result.canceled) {
         uploadFile(result.assets[0], 'file');
       }
-    } catch (err) { console.log(err); }
+    } catch (err) { logger.debug(err); }
   };
 
   const pickImage = async () => {
@@ -279,7 +280,7 @@ export default function SensorScreen() {
       if (!result.canceled) {
         uploadFile(result.assets[0], 'image');
       }
-    } catch (err) { console.log(err); }
+    } catch (err) { logger.debug(err); }
   };
 
   const uploadFile = async (fileAsset: any, explicitType: string = 'file') => {
@@ -302,7 +303,7 @@ export default function SensorScreen() {
       
       if (!res.ok) {
         const errText = await res.text();
-        console.log("Upload failed with status", res.status, errText);
+        logger.debug("Upload failed with status", res.status, errText);
         Alert.alert("Sunucu Hatası", `Kod: ${res.status}\n\nDetay: ${errText.substring(0, 150)}`);
         return;
       }
@@ -333,7 +334,7 @@ export default function SensorScreen() {
           const { sound } = await Audio.Sound.createAsync(s.file, { isLooping: true, volume: 0 });
           soundsMapRef.current[s.key] = sound;
         } catch (e) {
-          console.log("Ses yüklenemedi", s.key);
+          logger.debug("Ses yüklenemedi", s.key);
         }
       }
     }
@@ -433,7 +434,7 @@ export default function SensorScreen() {
     try {
       await Brightness.setBrightnessAsync(brightness);
     } catch {
-      console.log('Parlaklık geri yüklenemedi');
+      logger.debug('Parlaklık geri yüklenemedi');
     }
   };
 
@@ -607,7 +608,7 @@ export default function SensorScreen() {
           await Brightness.setBrightnessAsync(0);
           if (mounted) setFocusScreenDimmed(true);
         } catch {
-          console.log('Odak ekranı karartılamadı');
+          logger.debug('Odak ekranı karartılamadı');
         }
       } else {
         if (mounted) setFocusScreenDimmed(false);

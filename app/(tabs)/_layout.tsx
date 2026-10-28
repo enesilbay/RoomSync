@@ -7,6 +7,7 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiUrl, BACKEND_URL } from '@/src/lib/api';
 import { C } from '@/src/theme';
+import { logger } from '@/src/lib/logger';
 import { io, Socket } from 'socket.io-client';
 
 // Expo Go (SDK 53+) Android push bildirimlerini desteklemiyor.
@@ -130,10 +131,10 @@ export default function TabLayout() {
           },
           body: JSON.stringify({ token }),
         });
-        console.log("Push token backend'e kaydedildi.");
+        logger.debug("Push token backend'e kaydedildi.");
       }
     } catch (e) {
-      console.error('Push token kaydedilirken hata:', e);
+      logger.error('Push token kaydedilirken hata:', e);
     }
   }
 
@@ -160,13 +161,13 @@ export default function TabLayout() {
           Constants.expoConfig?.extra?.eas?.projectId ??
           Constants.easConfig?.projectId;
         if (!projectId) {
-          console.warn('Push bildirimleri için projectId bulunamadı.');
+          logger.warn('Push bildirimleri için projectId bulunamadı.');
           return undefined;
         }
         token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-        console.log('Expo Push Token:', token);
+        logger.debug('Expo Push Token:', token);
       } catch (e) {
-        console.error('Push token alınamadı:', e);
+        logger.error('Push token alınamadı:', e);
       }
     }
 

@@ -19,6 +19,7 @@ import { io, Socket } from 'socket.io-client';
 import { apiUrl, assetUrl } from '@/src/lib/api';
 import { FramedAvatar } from '@/src/components/FramedAvatar';
 import { C } from '@/src/theme';
+import { logger } from '@/src/lib/logger';
 
 const BACKEND_URL = apiUrl('');
 const T = C;
@@ -89,7 +90,7 @@ export default function DMScreen() {
           setMessages(data);
         }
       } catch (err) {
-        console.log(err);
+        logger.debug(err);
       } finally {
         setIsLoading(false);
       }

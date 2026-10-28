@@ -13,6 +13,7 @@ import { FramedAvatar } from '@/src/components/FramedAvatar';
 import { FocusSummaryStrip } from '@/src/components/common';
 import { C, Theme } from '@/src/theme';
 import { getRankInfo, getRankProgress } from '@/src/lib/rank';
+import { logger } from '@/src/lib/logger';
 
 const T = C;
 
@@ -107,7 +108,7 @@ export default function MeScreen() {
       }
       setRequests(allRequests);
     } catch (e) {
-      console.log('Me tab fetch error:', e);
+      logger.debug('Me tab fetch error:', e);
     } finally {
       setLoading(false);
       Animated.parallel([

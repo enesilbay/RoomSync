@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { apiUrl, assetUrl } from '@/src/lib/api';
 import { FramedAvatar } from '@/src/components/FramedAvatar';
 import { C, Theme } from '@/src/theme';
+import { logger } from '@/src/lib/logger';
 
 const T = C;
 const { width, height } = Dimensions.get('window');
@@ -171,7 +172,7 @@ export default function LobbiesScreen() {
         }
       }
     } catch (e) {
-      console.error('Kullanıcı verisi çekilemedi', e);
+      logger.error('Kullanıcı verisi çekilemedi', e);
     }
   };
 
@@ -204,7 +205,7 @@ export default function LobbiesScreen() {
       const data = await response.json();
       setLobbies(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.warn('[lobbies] Lobi listesi yüklenemedi:', e);
+      logger.warn('[lobbies] Lobi listesi yüklenemedi:', e);
     }
   };
 
@@ -262,7 +263,7 @@ export default function LobbiesScreen() {
         Alert.alert('Hata', 'Şifre hatalı!');
       }
     } catch (e) {
-      console.error('Verify password error:', e);
+      logger.error('Verify password error:', e);
       Alert.alert('Hata', 'Sunucu bağlantı hatası.');
     } finally {
       setIsVerifying(false);
