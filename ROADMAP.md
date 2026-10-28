@@ -237,6 +237,7 @@ Backend kararı ilk madde, çünkü diğer maddelerin çoğu ona bağlı.
   - Yalın bir RoomSync API'si kurulur.
 
   Karara göre `eas.json` URL'leri güncellenir ve gizlilik politikasında gerçek veri işleyen taraf yazılır.
+- [ ] 🟠 **Expo SDK yükseltmesi (54 → güncel, 2026-10-28 itibarıyla 58).** React Native 0.81 → 0.88, Expo Router 6 → güncel. Mağazaların hedef API seviyesi şartları ve Expo Go desteği için yayından önce zorunlu. Adımlar: `npx expo install expo@^58` → `npm run deps:fix` → SDK sürüm notlarındaki kırıcı değişiklikler → CI + cihaz testi. Dev client yeniden build edilir.
 - [ ] 🔴 **İzinler:**
   - `android.permissions` kaldırılsın.
   - `blockedPermissions` listesine eklensin: `RECORD_AUDIO`, `CAMERA`, `ACTIVITY_RECOGNITION`, `WRITE_SETTINGS`, `SYSTEM_ALERT_WINDOW`, `READ/WRITE_EXTERNAL_STORAGE`, `MODIFY_AUDIO_SETTINGS`.

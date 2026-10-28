@@ -62,8 +62,21 @@ Telefon ve bilgisayar aynı ağda olmalı; `192.168.x.x` yerine bilgisayarının
 | `npm run lint:strict` | ESLint, uyarılara da izin vermez (`--max-warnings 0`) |
 | `npm test` | Jest testleri |
 | `npm run test:ci` | Jest, CI modunda ve coverage raporuyla |
+| `npm run deps:check` | Paketlerin Expo SDK sürümüyle uyumunu denetler |
+| `npm run deps:fix` | Uyumsuz paketleri SDK'nın beklediği sürüme çeker |
 
 CI her push'ta ve `main`'e açılan PR'larda typecheck, `lint:strict`, `test:ci` ve `expo-doctor` çalıştırır.
+
+### Bağımlılık güncellemeleri
+
+Expo SDK'ya bağlı paketler (`expo`, `expo-*`, `react`, `react-native` ve native modüller, `@react-navigation/*`, `jest-expo`, `typescript` vb.) birbirine kilitli sürümlerle gelir; tek tek yükseltilmez. Yalnızca SDK yükseltmesiyle birlikte güncellenir:
+
+```bash
+npx expo install expo@^<SDK>   # örn. expo@^58
+npm run deps:fix
+```
+
+Dependabot bu paketleri yok sayar; yalnızca SDK'dan bağımsız paketlerin minor/patch güncellemelerini tek bir PR'da önerir.
 
 ## Yol haritası
 
