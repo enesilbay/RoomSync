@@ -1,48 +1,48 @@
 version: 2
 updates:
   # npm bağımlılıkları.
-  # NOT: Expo SDK'ya bağlı paketler (expo, expo-*, react, react-native*, jest-expo
-  # vb.) SDK ile uyumlu sürümlere sabitlenir ve `npx expo install --fix` ile
-  # güncellenmelidir. Dependabot bunların major bumplarını (SDK yükseltmesi)
-  # önermesin; minor/patch güncellemeleri tek bir PR'da gruplanır.
+  #
+  # Expo SDK'nın yönettiği paketler (expo, expo-*, react, react-native ve native
+  # modüller, Expo Router'a bağlı @react-navigation/*, test/lint/TS araçları)
+  # birbirine kilitli sürümlerle gelir. Bunlar Dependabot'tan TAMAMEN hariç tutulur;
+  # yalnızca SDK yükseltmesiyle birlikte güncellenir:
+  #   npx expo install expo@^<SDK> && npx expo install --fix
+  # SDK içindeki uyum `npm run deps:check` ve CI'daki expo-doctor ile denetlenir.
+  #
+  # Dependabot yalnızca SDK'dan bağımsız paketlerin (ör. socket.io-client)
+  # minor/patch güncellemelerini önerir.
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      expo:
-        patterns:
-          - 'expo'
-          - 'expo-*'
-          - '@expo/*'
-          - 'jest-expo'
-          - 'react-native'
-          - 'react-native-*'
-          - '@react-native/*'
-          - '@react-native-*'
-      dev-tools:
-        dependency-type: development
+      npm-minor-patch:
+        update-types: ['minor', 'patch']
     ignore:
+      # Expo SDK ve React Native
       - dependency-name: 'expo'
-        update-types: ['version-update:semver-major']
       - dependency-name: 'expo-*'
-        update-types: ['version-update:semver-major']
       - dependency-name: '@expo/*'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'jest-expo'
-        update-types: ['version-update:semver-major']
       - dependency-name: 'react'
-        update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'react-dom'
-        update-types: ['version-update:semver-major', 'version-update:semver-minor']
-      - dependency-name: 'react-test-renderer'
-        update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'react-native'
-        update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'react-native-*'
-        update-types: ['version-update:semver-major']
-      - dependency-name: '@react-native-*'
+      - dependency-name: '@react-native/*'
+      - dependency-name: '@react-native-async-storage/*'
+      - dependency-name: '@react-native-community/*'
+      # Expo Router'ın iç bağımlılıklarıyla aynı sürümde kalmalı
+      - dependency-name: '@react-navigation/*'
+      # SDK'ya bağlı geliştirme araçları
+      - dependency-name: 'jest-expo'
+      - dependency-name: 'jest'
+      - dependency-name: '@types/jest'
+      - dependency-name: 'react-test-renderer'
+      - dependency-name: '@types/react'
+      - dependency-name: 'eslint-config-expo'
+      - dependency-name: 'typescript'
+      # Major sürümler kırıcı değişiklik getirir; bilinçli olarak elle yükseltilir
+      - dependency-name: '*'
         update-types: ['version-update:semver-major']
 
   # GitHub Actions sürümleri.
