@@ -11,8 +11,9 @@ Uygulamadaki tüm ortam sesleri `src/features/focus/constants.ts` içinden `requ
 | `library.m4a` | 3:57,01 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 1,97 MB | ⚠️ Kaynak/lisans doğrulanmalı — mağaza yayını öncesi zorunlu |
 | `fire.m4a` | 1:11,01 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 0,60 MB | ⚠️ Kaynak/lisans doğrulanmalı — mağaza yayını öncesi zorunlu |
 | `deep-focus.m4a` | 1:30,00 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 0,74 MB | Proje içinde ffmpeg ile üretildi; lisans kısıtı yok |
+| `chime.m4a` | 0:01,50 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 11,5 KB | Proje içinde üretildi; lisans kısıtı yok |
 
-**Toplam:** 7,02 MB. Önceki MP3'ler toplam 50,86 MB idi.
+**Toplam:** 7,03 MB. Önceki MP3'ler toplam 50,86 MB idi.
 
 ## Orijinal kayıtlar
 
@@ -56,3 +57,12 @@ Proje içinde üretilmiş kahverengi gürültüdür. Telif ve lisans kısıtı y
 - **Kaynak:** `anoisesrc=color=brown:sample_rate=44100:amplitude=1:seed=42`. Sabit tohum kullanıldığı için tekrar üretilebilir.
 - **Filtreler:** `highpass=f=40` ses dışı uğultuyu, `lowpass=f=1500` sert tizleri keser. Ardından `volume=0.05` uygulandı. Sonuç yaklaşık −43 LUFS'tur ve diğer seslerle (−37…−50 LUFS) aynı aralıktadır.
 - **Döngü:** Yukarıdaki dikişsiz döngü yöntemi kullanıldı (90 sn döngü, 4 sn çapraz geçiş).
+
+## Bitiş zili (`chime.m4a`)
+
+Odak oturumu süresi dolunca bir kez çalınır (döngü yok, `src/features/focus/feedback.ts`). Proje içinde ffmpeg ile sentezlendi; telif ve lisans kısıtı yoktur. Üretimde kullanılan ayarlar:
+
+- **Kaynak:** `aevalsrc` ile üç sinüs kısmi: E5 (659,25 Hz, genlik 0,55, sönüm `exp(-2.6t)`), B5 (987,77 Hz, 0,30, `exp(-3.6t)`) ve E6 (1318,51 Hz, 0,15, `exp(-5.2t)`). Toplam 0,4 ile ölçeklendi.
+- **Zarf:** 6 ms doğrusal atak (tık olmasın diye) ve son 0,25 sn `afade` ile sönüş. Süre 1,5 sn.
+- **Seviye:** yaklaşık −25 LUFS, tepe −8,4 dBFS. Ortam seslerinin üstünde duyulur ama sert değildir.
+- **Kodlama:** diğer dosyalarla aynı ayarlar (AAC-LC mono 64 kbps). `scripts/audio/encode-sounds.sh` ile byte düzeyinde aynı üretilir.

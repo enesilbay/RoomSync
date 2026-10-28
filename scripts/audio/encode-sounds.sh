@@ -57,4 +57,10 @@ loop fire    "$SRC/fire.mp3"    0.5 71  3
   -af "highpass=f=40,lowpass=f=1500,volume=${DEEP_GAIN:-0.05}" -c:a pcm_f32le "$TMP/deep-raw.wav"
 loop deep-focus "$TMP/deep-raw.wav" 2 90 4
 
+# Bitiş zili (döngü yok): üç sinüs kısmi (E5, B5, E6), her biri üstel sönümlü;
+# 6 ms yumuşak atak, son 0,25 sn fade-out, toplam 1,5 sn. Kaynak dosya gerekmez.
+CHIME='0.4*min(1\,t/0.006)*(0.55*sin(2*PI*659.25*t)*exp(-2.6*t)+0.30*sin(2*PI*987.77*t)*exp(-3.6*t)+0.15*sin(2*PI*1318.51*t)*exp(-5.2*t))'
+"$FF" -hide_banner -loglevel error -y -f lavfi -i "aevalsrc=$CHIME:s=$SR:d=1.5" \
+  -af "afade=t=out:st=1.25:d=0.25" "${ENC[@]}" "$OUT/chime.m4a"
+
 ls -la "$OUT"
