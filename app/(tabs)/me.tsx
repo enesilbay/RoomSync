@@ -14,6 +14,7 @@ import { FocusSummaryStrip } from '@/src/components/common';
 import { C, Theme } from '@/src/theme';
 import { getRankInfo, getRankProgress } from '@/src/lib/rank';
 import { logger } from '@/src/lib/logger';
+import { useTodayStats } from '@/src/features/sessions';
 
 const T = C;
 
@@ -78,7 +79,9 @@ export default function MeScreen() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<SocialRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  // "Bugün" değeri yerel oturum geçmişinden (erken return'lerden önce çağrılmalı)
+  const todayStats = useTodayStats();
+
   // Modals & Forms
   const [isFriendModalVisible, setIsFriendModalVisible] = useState(false);
   const [isSocialModalVisible, setIsSocialModalVisible] = useState(false);
@@ -337,7 +340,7 @@ export default function MeScreen() {
 
         {/* ── ÖZET ŞERİDİ ── */}
         <FocusSummaryStrip
-          todayMinutes={user.totalFocusMinutes ?? 0}
+          todayMinutes={todayStats.focusedMinutes}
           streakDays={user.currentStreak ?? 1}
           coins={user.coins ?? 0}
           onPressCoins={() => router.push('/shop')}
