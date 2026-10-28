@@ -42,10 +42,9 @@ export const SOUND_PACK_LABELS: Record<string, string> = {
   deep: 'Derin Odak',
 };
 
-export const POMODORO_OPTIONS = [
-  { label: '15 dk', minutes: 15 }, { label: '25 dk', minutes: 25 },
-  { label: '45 dk', minutes: 45 }, { label: '60 dk', minutes: 60 },
-];
+/** Odak süresi seçenekleri (dk). */
+export const FOCUS_DURATIONS = [15, 25, 45, 60] as const;
+export const DEFAULT_FOCUS_MINUTES = 25;
 
-export const FLAT_Z_THRESHOLD = 0.8;
-export const FLAT_AXIS_THRESHOLD = 0.3;
+/** Bu süre ve üstündeki oturumlarda şarj önerisi gösterilir (dk). */
+export const LONG_SESSION_MINUTES = 60;

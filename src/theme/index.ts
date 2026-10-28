@@ -126,6 +126,14 @@ export const Theme = {
       heat: (opacity: number) => `rgba(255, 193, 7, ${opacity})`,
     },
 
+    // --- Esnek mod minimal odak ekranı (OLED siyahı üstünde soluk öğeler) ---
+    oled: {
+      /** Büyük sayaç rakamları: siyah zeminde okunur ama parlamaz. */
+      digits: 'rgba(255, 255, 255, 0.32)',
+      /** Durum satırı ve ipuçları. */
+      caption: 'rgba(255, 255, 255, 0.2)',
+    },
+
     // --- Android bildirim kanalı LED rengi ---
     notification: {
       lightColor: '#FF231F7C',

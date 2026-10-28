@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { C } from '@/src/theme';
 
 type Props = {
@@ -7,16 +7,24 @@ type Props = {
   onPress: () => void;
 };
 
-// WEB İÇİN MANUEL SENSÖR SİMÜLASYONU
+// WEB İÇİN MANUEL SENSÖR SİMÜLASYONU (web'de ivmeölçer verisi yok)
 export function WebSensorToggle({ isAtDesk, onPress }: Props) {
+  const label = isAtDesk ? 'Masadan Kalk' : 'Masaya Geç';
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={{ backgroundColor: isAtDesk ? C.softDanger : C.softSuccess, padding: 12, borderRadius: 12, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: isAtDesk ? C.danger : C.success }}
+      style={[s.btn, isAtDesk ? s.btnLeave : s.btnEnter]}
+      accessibilityRole="button"
+      accessibilityLabel={`Web testi: ${label}`}
     >
-      <Text style={{ color: isAtDesk ? C.danger : C.success, fontWeight: 'bold' }}>
-        [Web Test] {isAtDesk ? 'Masadan Kalk' : 'Masaya Geç'}
-      </Text>
+      <Text style={[s.text, { color: isAtDesk ? C.danger : C.success }]}>[Web Test] {label}</Text>
     </TouchableOpacity>
   );
 }
+
+const s = StyleSheet.create({
+  btn: { minHeight: 44, padding: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 12, borderWidth: 1 },
+  btnEnter: { backgroundColor: C.softSuccess, borderColor: C.success },
+  btnLeave: { backgroundColor: C.softDanger, borderColor: C.danger },
+  text: { fontWeight: 'bold' },
+});
