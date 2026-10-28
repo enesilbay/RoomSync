@@ -241,7 +241,7 @@ export default function SensorScreen() {
         equippedBubbleColor: m.user?.equippedBubbleColor,
         equippedIcon: m.user?.equippedIcon,
       })));
-    } catch (e) { logger.error("Geçmiş yüklenemedi"); }
+    } catch { logger.error("Geçmiş yüklenemedi"); }
   };
 
   const fetchOnlineFriends = async () => {
@@ -313,7 +313,7 @@ export default function SensorScreen() {
         fullName: safeFullName, roomName, 
         text: name, type: data.type || explicitType, fileUrl: data.fileUrl, isPremium
       });
-    } catch (e) { Alert.alert("Hata", "Dosya yüklenemedi"); }
+    } catch { Alert.alert("Hata", "Dosya yüklenemedi"); }
   };
 
   // ── SES MİKSERİ (SOUND MIXER) MANTIĞI ──
@@ -333,7 +333,7 @@ export default function SensorScreen() {
         try {
           const { sound } = await Audio.Sound.createAsync(s.file, { isLooping: true, volume: 0 });
           soundsMapRef.current[s.key] = sound;
-        } catch (e) {
+        } catch {
           logger.debug("Ses yüklenemedi", s.key);
         }
       }
@@ -366,7 +366,7 @@ export default function SensorScreen() {
               if (status.isPlaying) await sound.pauseAsync();
             }
           }
-        } catch(e){}
+        } catch {}
       }
     }
     syncPlayback();
@@ -711,7 +711,7 @@ export default function SensorScreen() {
     if (!url) return;
     try {
       await WebBrowser.openBrowserAsync(url);
-    } catch (e) {
+    } catch {
       Alert.alert("Tarayıcı Bulunamadı", `Cihazınızda bağlantıyı açacak bir tarayıcı yok:\n\n${url}`);
     }
   };

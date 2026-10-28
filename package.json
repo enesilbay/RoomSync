@@ -8,6 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "lint:strict": "expo lint --max-warnings 0",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

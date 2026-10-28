@@ -188,7 +188,7 @@ export default function LobbiesScreen() {
         const data = await res.json();
         setFriends(Array.isArray(data) ? data : []);
       }
-    } catch (e) {}
+    } catch {}
   };
 
   const fetchLobbies = async () => {

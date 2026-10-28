@@ -136,7 +136,7 @@ export default function MeScreen() {
       if (res.ok) {
         fetchData();
       }
-    } catch (e) {
+    } catch {
       Alert.alert('Hata', 'İşlem gerçekleştirilemedi.');
     }
   };
@@ -175,7 +175,7 @@ export default function MeScreen() {
       } else {
         Alert.alert('Hata', 'Kullanıcı şu an davet edilemiyor.');
       }
-    } catch (e) {
+    } catch {
       Alert.alert('Hata', 'Sunucu bağlantı hatası.');
     }
   };

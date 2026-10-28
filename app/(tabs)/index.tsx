@@ -110,7 +110,7 @@ export default function AuthScreen() {
         const parsed = JSON.parse(userData);
         router.replace({ pathname: '/lobbies' as any, params: parsed });
       }
-    } catch (e) {}
+    } catch {}
   };
 
   const handleAuth = async () => {
