@@ -269,14 +269,6 @@ export default function LobbiesScreen() {
     }
   };
 
-
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('user_data');
-      router.replace('/');
-    } catch (e) { console.error('Çıkış hatası:', e); }
-  };
-
   const filteredLobbies = lobbies.filter((l) => {
     const matchSearch = l.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchCategory = selectedCategoryFilter === 'Tümü' || l.category === selectedCategoryFilter;
@@ -588,13 +580,8 @@ const s = StyleSheet.create({
 });
 
 const hdr = StyleSheet.create({
-  iconBtn: { width: 42, height: 42, borderRadius: 14, backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center', ...Theme.shadows.soft },
-  iconBtnDanger: { borderColor: T.softDanger, backgroundColor: '#FFFFFF' },
-  badge: { position: 'absolute', top: -4, right: -4, backgroundColor: T.danger, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: T.background },
-  badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: 'bold' },
   profileAvatar: { ...Theme.shadows.soft },
   profileAvatarText: { fontFamily: 'Montserrat_800ExtraBold', fontSize: 18, color: T.primary },
-  logoutWrap: { width: 42, height: 42, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
 });
 
 const card = StyleSheet.create({
@@ -627,31 +614,10 @@ const mdl = StyleSheet.create({
   cancelText: { fontSize: 15, fontWeight: 'bold', color: T.textDark },
   createBtn: { height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   createText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
-  closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: T.softIndigo, alignItems: 'center', justifyContent: 'center' },
-});
-
-const flist = StyleSheet.create({
-  sectionTitle: { fontSize: 13, fontWeight: '800', color: T.textMuted, letterSpacing: 1, marginBottom: 12 },
-  itemWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.background, padding: 14, borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: T.border },
-  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: T.softIndigo, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  avatarText: { fontSize: 18, fontWeight: '800', color: T.primary },
-  info: { flex: 1 },
-  name: { fontSize: 15, fontWeight: 'bold', color: T.textDark, marginBottom: 3 },
-  username: { fontSize: 13, color: T.textMuted },
-  scoreTitle: { fontSize: 10, color: T.textMuted, fontWeight: '600', marginBottom: 2 },
-  score: { fontSize: 14, color: T.accent, fontWeight: 'bold' },
-  actions: { flexDirection: 'row', gap: 8 },
-  actionBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  acceptBtn: { backgroundColor: T.softSuccess, borderWidth: 1, borderColor: T.success },
-  rejectBtn: { backgroundColor: T.softDanger, borderWidth: 1, borderColor: T.danger },
-  emptyWrap: { alignItems: 'center', paddingVertical: 40, gap: 10, backgroundColor: T.background, borderRadius: 20, borderWidth: 1, borderColor: T.border },
-  emptyText: { fontSize: 14, color: T.textMuted, fontWeight: '500' }
 });
 
 const bg = StyleSheet.create({
   orb1: { position: 'absolute', top: -height * 0.08, right: -width * 0.22, width: width * 0.75, height: width * 0.75, borderRadius: width * 0.375, backgroundColor: T.softIndigo, opacity: 0.75 },
   orb2: { position: 'absolute', bottom: -height * 0.06, left: -width * 0.28, width: width * 0.8, height: width * 0.8, borderRadius: width * 0.4, backgroundColor: T.lightAmber, opacity: 0.58 },
   orb3: { position: 'absolute', top: height * 0.37, right: width * 0.08, width: width * 0.32, height: width * 0.32, borderRadius: width * 0.16, backgroundColor: T.softInfo, opacity: 0.45 },
-  gridLine1: { position: 'absolute', top: 0, left: width * 0.33, width: 1, height: height, backgroundColor: 'rgba(255,255,255,0.02)' },
-  gridLine2: { position: 'absolute', top: 0, left: width * 0.66, width: 1, height: height, backgroundColor: 'rgba(255,255,255,0.02)' },
 });

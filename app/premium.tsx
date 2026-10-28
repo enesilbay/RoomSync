@@ -22,7 +22,7 @@ export default function PremiumScreen() {
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [isLoading, setIsLoading] = useState(false);
   const [isStripeModalVisible, setIsStripeModalVisible] = useState(false);
-  const [cardNumber, setCardNumber] = useState('4242 •••• •••• 4242');
+  const [cardNumber] = useState('4242 •••• •••• 4242');
   const [alertState, setAlertState] = useState<{ visible: boolean; type?: 'info' | 'success' | 'danger'; title: string; message: string }>({
     visible: false,
     title: '',

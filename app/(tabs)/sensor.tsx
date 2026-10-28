@@ -157,7 +157,6 @@ export default function SensorScreen() {
   const [focusScreenDimmed, setFocusScreenDimmed] = useState(false);
   const [showPomodoroModal, setShowPomodoroModal] = useState(false);
   const pomTimerRef = useRef<any>(null); 
-  const pomAnim = useRef(new Animated.Value(1)).current;
 
   const socketRef = useRef<any>(null);
   const previousDeskState = useRef<boolean | null>(null);

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -517,7 +516,6 @@ const styles = StyleSheet.create({
   infoTip: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', backgroundColor: T.softInfo, borderRadius: 14, borderWidth: 1, borderColor: T.border, padding: 12, marginBottom: 16 },
   infoTipText: { flex: 1, color: T.textDark, fontSize: 12, fontWeight: '700', lineHeight: 17 },
   sheetTitle: { color: T.textDark, fontSize: 20, fontWeight: '900', marginBottom: 10 },
-  sheetText: { color: T.textMuted, fontSize: 14, fontWeight: '600', lineHeight: 21, marginBottom: 18 },
   inputLabel: { color: T.textDark, fontSize: 12, fontWeight: '900', marginBottom: 7, marginLeft: 2 },
   inputWrap: { backgroundColor: T.softIndigo, borderRadius: 14, borderWidth: 1, borderColor: T.border, paddingHorizontal: 14, marginBottom: 16 },
   input: { height: 52, color: T.textDark, fontSize: 16, fontWeight: '600' },

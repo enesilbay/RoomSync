@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -305,7 +305,6 @@ const styles = StyleSheet.create({
   colorPreview: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: T.border },
   iconPreview: { width: 44, height: 44, borderRadius: 22, backgroundColor: T.background, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border },
   iconPreviewText: { fontSize: 20 },
-  soundPreview: { width: 44, height: 44, borderRadius: 16, backgroundColor: T.softIndigo, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border },
   framePreview: { width: 44, height: 44, borderRadius: 22, borderWidth: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: T.surface },
   framePreviewInner: { width: 24, height: 24, borderRadius: 12, opacity: 0.22 },
   itemName: { color: T.textDark, fontSize: 15, fontWeight: '800' },
