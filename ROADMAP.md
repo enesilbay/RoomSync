@@ -177,6 +177,7 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
   - `res.ok` kontrolü ve JSON olmayan yanıtlara karşı koruma
   - Token yoksa `Bearer null` gönderilmesin
   - 401 gelirse oturum kapansın
+- [ ] 🟡 Dosya yüklemelerini (profil fotoğrafı, sohbet resmi/PDF) SDK 56+ varsayılanı `expo/fetch` ile uyumlu hale getir (`expo-file-system` `File` / Blob ile FormData); ardından `EXPO_PUBLIC_USE_RN_FETCH=1` geçici ayarını `.env.example` ve `eas.json`'dan kaldır. Şu an bu ayar unutulursa yüklemeler sessizce bozulur.
 - [ ] 🟡 Backend URL:
   - LAN yedeği yalnızca `__DEV__` modunda kullanılsın.
   - Release build'de adres https değilse açık bir hata versin.
@@ -237,7 +238,8 @@ Backend kararı ilk madde, çünkü diğer maddelerin çoğu ona bağlı.
   - Yalın bir RoomSync API'si kurulur.
 
   Karara göre `eas.json` URL'leri güncellenir ve gizlilik politikasında gerçek veri işleyen taraf yazılır.
-- [ ] 🟠 **Expo SDK yükseltmesi (54 → güncel, 2026-10-28 itibarıyla 58).** React Native 0.81 → 0.88, Expo Router 6 → güncel. Mağazaların hedef API seviyesi şartları ve Expo Go desteği için yayından önce zorunlu. Adımlar: `npx expo install expo@^58` → `npm run deps:fix` → SDK sürüm notlarındaki kırıcı değişiklikler → CI + cihaz testi. Dev client yeniden build edilir.
+- [x] 🟠 **Expo SDK yükseltmesi (54 → güncel, 2026-10-28 itibarıyla 58).** React Native 0.81 → 0.88, Expo Router 6 → güncel. Mağazaların hedef API seviyesi şartları ve Expo Go desteği için yayından önce zorunlu. Adımlar: `npx expo install expo@^58` → `npm run deps:fix` → SDK sürüm notlarındaki kırıcı değişiklikler → CI + cihaz testi. Dev client yeniden build edilir.
+  - Yapıldı: expo 54.0.38 → 58.0.21, React Native 0.81.5 → 0.88.0, React 19.1 → 19.3, Expo Router 6.0.24 → 58.0.28 (`@react-navigation/*` kaldırıldı), TypeScript 5.9 → 6.0, Jest 29 → 30, RNTL 13 → 14. Cihaz testi ve yeni dev client build'i bekliyor.
 - [ ] 🔴 **İzinler:**
   - `android.permissions` kaldırılsın.
   - `blockedPermissions` listesine eklensin: `RECORD_AUDIO`, `CAMERA`, `ACTIVITY_RECOGNITION`, `WRITE_SETTINGS`, `SYSTEM_ALERT_WINDOW`, `READ/WRITE_EXTERNAL_STORAGE`, `MODIFY_AUDIO_SETTINGS`.

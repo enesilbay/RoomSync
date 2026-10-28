@@ -19,7 +19,7 @@ Algılama yalnızca uygulama açıkken çalışır (iOS arka planda sensör okum
 
 ## Teknoloji
 
-- Expo SDK 54 · React Native · TypeScript · Expo Router
+- Expo SDK 58 · React Native 0.88 (yalnızca New Architecture) · React 19.3 · TypeScript 6 · Expo Router 58 (react-navigation'a bağlı değil)
 - `expo-sensors` (ivmeölçer), `expo-audio`, `expo-sqlite`, `expo-haptics`, Socket.IO istemcisi
 - Jest (`jest-expo`) + React Native Testing Library, GitHub Actions
 
@@ -52,6 +52,10 @@ npx expo start
 
 Telefon ve bilgisayar aynı ağda olmalı; `192.168.x.x` yerine bilgisayarının yerel IP adresini yaz.
 
+`.env` içinde `EXPO_PUBLIC_USE_RN_FETCH=1` de bulunmalı (`.env.example`'da var; EAS profillerinde `eas.json` ayarlıyor): SDK 56+ varsayılan `expo/fetch`, dosya yüklemelerindeki `{ uri }` FormData parçalarını desteklemiyor.
+
+> **SDK 58 yükseltmesi sonrası:** native modüllerin tamamı değişti; SDK 54 ile kurulmuş development build (dev client) bu sürümle çalışmaz. Yeni bir dev client build et (`npx expo run:android` / `npx expo run:ios` veya EAS) ve cihaza yeniden kur. Expo Go yalnızca güncel SDK'yı destekler; push bildirimleri için zaten dev client gerekir.
+
 ## Komutlar
 
 | Komut | Açıklama |
@@ -69,7 +73,7 @@ CI her push'ta ve `main`'e açılan PR'larda typecheck, `lint:strict`, `test:ci`
 
 ### Bağımlılık güncellemeleri
 
-Expo SDK'ya bağlı paketler (`expo`, `expo-*`, `react`, `react-native` ve native modüller, `@react-navigation/*`, `jest-expo`, `typescript` vb.) birbirine kilitli sürümlerle gelir; tek tek yükseltilmez. Yalnızca SDK yükseltmesiyle birlikte güncellenir:
+Expo SDK'ya bağlı paketler (`expo`, `expo-*`, `react`, `react-native` ve native modüller, `jest-expo`, `@react-native/jest-preset`, `eslint-config-expo`, `typescript` vb.) birbirine kilitli sürümlerle gelir; tek tek yükseltilmez. Yalnızca SDK yükseltmesiyle birlikte güncellenir:
 
 ```bash
 npx expo install expo@^<SDK>   # örn. expo@^58
