@@ -140,18 +140,19 @@ export function useAmbientSounds({ isEliteRoom, equippedSoundPack, isAtDesk, isF
   }, [isEliteRoom, equippedSoundPack]);
 
   const [isSoundOn, setIsSoundOn] = useState(false);
-  const [volumes, setVolumes] = useState<Record<string, number>>({});
+  // Paket değişince varsayılan olarak ilk ses tam açık (render sırasında; effect içinde setState yok).
+  const [volumes, setVolumes] = useState<Record<string, number>>(() => ({ [availableSounds[0].key]: 1 }));
+  const [volumesPack, setVolumesPack] = useState(availableSounds);
+  if (volumesPack !== availableSounds) {
+    setVolumesPack(availableSounds);
+    setVolumes({ [availableSounds[0].key]: 1 });
+  }
   const [showMixer, setShowMixer] = useState(false);
 
   const bankRef = useRef<Bank | null>(null);
   const fadeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const desiredRef = useRef<Desired>({ shouldPlay: false, volumes: {}, isFocused });
   const lastShouldPlayRef = useRef(false);
-
-  // Paket değişince varsayılan olarak ilk ses tam açık.
-  useEffect(() => {
-    setVolumes({ [availableSounds[0].key]: 1 });
-  }, [availableSounds]);
 
   // ── YÜKLEME ── Her paket kendi kuşağını (Bank) yükler; eskisi bırakılır.
   useEffect(() => {

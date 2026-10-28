@@ -26,18 +26,18 @@ describe('parseFocusPreferences', () => {
 
 describe('useFocusPreferences', () => {
   it('varsayılan esnek mod ve 25 dk', async () => {
-    const { result } = renderHook(() => useFocusPreferences());
+    const { result } = await renderHook(() => useFocusPreferences());
     await waitFor(() => expect(result.current.loaded).toBe(true));
     expect(result.current.mode).toBe('flexible');
     expect(result.current.minutes).toBe(25);
   });
 
   it('seçimi kaydeder ve yeni mount kayıttan okur', async () => {
-    const first = renderHook(() => useFocusPreferences());
+    const first = await renderHook(() => useFocusPreferences());
     await waitFor(() => expect(first.result.current.loaded).toBe(true));
 
-    act(() => first.result.current.setMode('strict'));
-    act(() => first.result.current.setMinutes(60));
+    await act(() => first.result.current.setMode('strict'));
+    await act(() => first.result.current.setMinutes(60));
     expect(first.result.current.mode).toBe('strict');
     expect(first.result.current.minutes).toBe(60);
     await waitFor(async () =>
@@ -46,9 +46,9 @@ describe('useFocusPreferences', () => {
         minutes: 60,
       }),
     );
-    first.unmount();
+    await first.unmount();
 
-    const second = renderHook(() => useFocusPreferences());
+    const second = await renderHook(() => useFocusPreferences());
     await waitFor(() => expect(second.result.current.loaded).toBe(true));
     expect(second.result.current.mode).toBe('strict');
     expect(second.result.current.minutes).toBe(60);
@@ -56,8 +56,8 @@ describe('useFocusPreferences', () => {
 
   it('yükleme bitmeden yapılan seçim diskteki eski değerle ezilmez', async () => {
     await AsyncStorage.setItem(FOCUS_PREFERENCES_KEY, JSON.stringify({ mode: 'strict', minutes: 15 }));
-    const { result } = renderHook(() => useFocusPreferences());
-    act(() => result.current.setMode('flexible'));
+    const { result } = await renderHook(() => useFocusPreferences());
+    await act(() => result.current.setMode('flexible'));
     await waitFor(() => expect(result.current.loaded).toBe(true));
     expect(result.current.mode).toBe('flexible');
   });

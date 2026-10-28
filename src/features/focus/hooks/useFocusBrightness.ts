@@ -44,6 +44,12 @@ async function restore(original: Original | null): Promise<void> {
 // istenen ile uygulanan eşitlenene kadar döngü sürer. Orijinal değer karartma döngüsü başına bir kez saklanır.
 export function useFocusBrightness({ keepAwake, dim }: Options): boolean {
   const [dimApplied, setDimApplied] = useState(false);
+  // dim kapanınca uygulandı bayrağı render sırasında sıfırlanır (effect içinde setState yok).
+  const [prevDim, setPrevDim] = useState(dim);
+  if (prevDim !== dim) {
+    setPrevDim(dim);
+    if (!dim) setDimApplied(false);
+  }
   const wantDimRef = useRef(false);
   const appliedRef = useRef(false);
   const originalRef = useRef<Original | null>(null);
@@ -91,7 +97,6 @@ export function useFocusBrightness({ keepAwake, dim }: Options): boolean {
     };
 
     wantDimRef.current = dim;
-    if (!dim) setDimApplied(false);
     chainRef.current = chainRef.current.then(reconcile);
 
     return () => {

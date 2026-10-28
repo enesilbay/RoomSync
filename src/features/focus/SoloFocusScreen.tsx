@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from 'expo-router';
 import { PageHeader, SoftCard } from '@/src/components/common';
 import { useTodayStats } from '@/src/features/sessions';
 import { C } from '@/src/theme';
@@ -35,7 +35,7 @@ export default function SoloFocusScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.background} />
+      <StatusBar barStyle="dark-content" />
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <BackgroundOrbs />
       </View>

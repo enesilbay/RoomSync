@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   StyleSheet, Text, View, TouchableOpacity, FlatList,
   TextInput, Modal, Alert, Animated, Dimensions,
@@ -53,12 +53,12 @@ function BackgroundOrbs() {
 
 // ── Lobi Kartı (Beyaz & Soft Gölgeli) ──
 function LobbyCard({ item, onPress, index, friends }: { item: Lobby; onPress: () => void; index: number; friends: LobbyFriend[] }) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [slideAnim] = useState(() => new Animated.Value(20));
+  const [scaleAnim] = useState(() => new Animated.Value(1));
   // Giriş animasyonu yalnızca mount'ta, kartın ilk sırasına göre gecikmeli oynar;
   // filtre/arama sırayı değiştirdiğinde yeniden oynamasın diye ilk değer sabitlenir.
-  const enterDelay = useRef(index * 80).current;
+  const [enterDelay] = useState(index * 80);
 
   useEffect(() => {
     Animated.parallel([
@@ -156,7 +156,7 @@ export default function LobbiesScreen() {
 
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Tümü');
 
-  const headerAnim = useRef(new Animated.Value(0)).current;
+  const [headerAnim] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     Animated.timing(headerAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
@@ -292,7 +292,7 @@ export default function LobbiesScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={T.background} />
+      <StatusBar barStyle="dark-content" />
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <BackgroundOrbs />
       </View>

@@ -30,23 +30,23 @@ function setup(ref: SocketRef, presence = false) {
 const values = (emits: Emit[]) => emits.map((e) => (e.payload as { isAtDesk: boolean }).isAtDesk);
 
 describe('usePresenceSync', () => {
-  it('yalnızca değer değişince gönderir', () => {
+  it('yalnızca değer değişince gönderir', async () => {
     const { ref, emits } = fakeSocket();
-    const { rerender } = setup(ref);
+    const { rerender } = await setup(ref);
     expect(values(emits)).toEqual([false]);
 
-    rerender({ presence: false });
-    rerender({ presence: true });
-    rerender({ presence: true });
-    rerender({ presence: false });
+    await rerender({ presence: false });
+    await rerender({ presence: true });
+    await rerender({ presence: true });
+    await rerender({ presence: false });
     expect(values(emits)).toEqual([false, true, false]);
     expect(emits[1]).toEqual({ event: 'update_presence', payload: { isAtDesk: true, roomName: 'Kütüphane' } });
   });
 
-  it('bağlı değilken göndermez; bağlantı (yeniden) kurulunca güncel değeri gönderir', () => {
+  it('bağlı değilken göndermez; bağlantı (yeniden) kurulunca güncel değeri gönderir', async () => {
     const { socket, ref, emits } = fakeSocket(false);
-    const { rerender, result } = setup(ref);
-    rerender({ presence: true });
+    const { rerender, result } = await setup(ref);
+    await rerender({ presence: true });
     expect(emits).toHaveLength(0);
 
     socket.connected = true;
@@ -58,14 +58,14 @@ describe('usePresenceSync', () => {
     expect(values(emits)).toEqual([true, true]);
 
     // Bağlantı sonrası değişiklik yine yalnızca değişimde gider.
-    rerender({ presence: true });
-    rerender({ presence: false });
+    await rerender({ presence: true });
+    await rerender({ presence: false });
     expect(values(emits)).toEqual([true, true, false]);
   });
 
-  it('socket kapanmadan önce masadaysa false gönderir', () => {
+  it('socket kapanmadan önce masadaysa false gönderir', async () => {
     const { ref, emits } = fakeSocket();
-    const { rerender, result } = setup(ref, true);
+    const { rerender, result } = await setup(ref, true);
     expect(values(emits)).toEqual([true]);
 
     result.current.onBeforeDisconnect();
@@ -73,13 +73,13 @@ describe('usePresenceSync', () => {
 
     // Socket kapandıktan sonra gelen false değişimi (bağlı değil) tekrar denenmez.
     ref.current = null;
-    rerender({ presence: false });
+    await rerender({ presence: false });
     expect(values(emits)).toEqual([true, false]);
   });
 
-  it('zaten false iken kapanışta fazladan göndermez', () => {
+  it('zaten false iken kapanışta fazladan göndermez', async () => {
     const { ref, emits } = fakeSocket();
-    const { result } = setup(ref, false);
+    const { result } = await setup(ref, false);
     result.current.onBeforeDisconnect();
     expect(values(emits)).toEqual([false]);
   });

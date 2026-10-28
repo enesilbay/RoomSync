@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet, Text, View, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
@@ -29,8 +29,8 @@ function InputField({
   iconName: string;
 }) {
   const [focused, setFocused] = useState(false);
-  const colorAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [colorAnim] = useState(() => new Animated.Value(0));
+  const [scaleAnim] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
     Animated.timing(colorAnim, { toValue: focused ? 1 : 0, duration: 200, useNativeDriver: false }).start();
@@ -80,10 +80,10 @@ export default function AuthScreen() {
   const [verifyToken, setVerifyToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const formSlide = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.85)).current;
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [slideAnim] = useState(() => new Animated.Value(30));
+  const [formSlide] = useState(() => new Animated.Value(0));
+  const [logoScale] = useState(() => new Animated.Value(0.85));
 
   useEffect(() => {
     // Kayıtlı oturum varsa doğrudan lobilere geç (yalnızca ilk açılışta çalışır)
@@ -241,7 +241,7 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={T.background} />
+      <StatusBar barStyle="dark-content" />
 
       {/* Hafif dekoratif arkaplan lekeleri */}
       <View style={s.blobTop} />

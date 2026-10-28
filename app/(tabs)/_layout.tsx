@@ -58,6 +58,80 @@ if (!isExpoGo) {
   });
 }
 
+// SDK 58: `href: null` artık rotayı erişilemez yapıp ilk sekmeye yönlendiriyor.
+// Eski davranış: sekme düğmesi gizli ama rota (giriş, /sensor) erişilebilir.
+const HIDDEN_TAB_OPTIONS = {
+  tabBarItemStyle: { display: 'none' },
+  tabBarButton: () => null,
+} as const;
+
+// Bileşen durumuna bağlı değil; modül kapsamında (React Compiler kuralları).
+async function saveTokenToBackend(token: string) {
+  try {
+    const stored = await AsyncStorage.getItem('user_data');
+    const accessToken = await AsyncStorage.getItem('access_token');
+    if (stored && accessToken) {
+      const user = JSON.parse(stored);
+      await fetch(apiUrl(`/users/${user.id}/push-token`), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ token }),
+      });
+      logger.debug("Push token backend'e kaydedildi.");
+    }
+  } catch (e) {
+    logger.error('Push token kaydedilirken hata:', e);
+  }
+}
+
+async function registerForPushNotificationsAsync(): Promise<string | undefined> {
+  if (!Notifications) return undefined;
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Device = require('expo-device') as typeof import('expo-device');
+
+  let token: string | undefined;
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Bildirim izni alınamadı!');
+      return undefined;
+    }
+    try {
+      const projectId =
+        Constants.expoConfig?.extra?.eas?.projectId ??
+        Constants.easConfig?.projectId;
+      if (!projectId) {
+        logger.warn('Push bildirimleri için projectId bulunamadı.');
+        return undefined;
+      }
+      token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+      logger.debug('Expo Push Token:', token);
+    } catch (e) {
+      logger.error('Push token alınamadı:', e);
+    }
+  }
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: C.notification.lightColor,
+    });
+  }
+
+  return token;
+}
+
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -136,72 +210,6 @@ export default function TabLayout() {
     };
   }, [router]);
 
-  async function saveTokenToBackend(token: string) {
-    try {
-      const stored = await AsyncStorage.getItem('user_data');
-      const accessToken = await AsyncStorage.getItem('access_token');
-      if (stored && accessToken) {
-        const user = JSON.parse(stored);
-        await fetch(apiUrl(`/users/${user.id}/push-token`), {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ token }),
-        });
-        logger.debug("Push token backend'e kaydedildi.");
-      }
-    } catch (e) {
-      logger.error('Push token kaydedilirken hata:', e);
-    }
-  }
-
-  async function registerForPushNotificationsAsync(): Promise<string | undefined> {
-    if (!Notifications) return undefined;
-
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Device = require('expo-device') as typeof import('expo-device');
-
-    let token: string | undefined;
-    if (Device.isDevice) {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== 'granted') {
-        alert('Bildirim izni alınamadı!');
-        return undefined;
-      }
-      try {
-        const projectId =
-          Constants.expoConfig?.extra?.eas?.projectId ??
-          Constants.easConfig?.projectId;
-        if (!projectId) {
-          logger.warn('Push bildirimleri için projectId bulunamadı.');
-          return undefined;
-        }
-        token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-        logger.debug('Expo Push Token:', token);
-      } catch (e) {
-        logger.error('Push token alınamadı:', e);
-      }
-    }
-
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: C.notification.lightColor,
-      });
-    }
-
-    return token;
-  }
-
   return (
     <Tabs
       screenOptions={{
@@ -229,14 +237,14 @@ export default function TabLayout() {
       }}>
       <Tabs.Screen
         name="index"
-        options={{ href: null }}
+        options={HIDDEN_TAB_OPTIONS}
       />
 
       <Tabs.Screen
         name="focus"
         options={{
           title: 'Odak',
-          tabBarIcon: ({ color, focused }: { color: string, focused: boolean }) => (
+          tabBarIcon: ({ color, focused }) => (
             <FontAwesome5 size={focused ? 22 : 20} name="stopwatch" color={color} solid={focused} />
           ),
         }}
@@ -245,7 +253,7 @@ export default function TabLayout() {
         name="lobbies"
         options={{
           title: 'Odalar',
-          tabBarIcon: ({ color, focused }: { color: string, focused: boolean }) => (
+          tabBarIcon: ({ color, focused }) => (
             <FontAwesome5 size={focused ? 22 : 20} name="door-open" color={color} solid={focused} />
           ),
         }}
@@ -254,14 +262,14 @@ export default function TabLayout() {
         name="me"
         options={{
           title: 'Ben',
-          tabBarIcon: ({ color, focused }: { color: string, focused: boolean }) => (
+          tabBarIcon: ({ color, focused }) => (
             <FontAwesome5 size={focused ? 22 : 20} name="user-circle" color={color} solid={focused} />
           ),
         }}
       />
       <Tabs.Screen
         name="sensor"
-        options={{ href: null }}
+        options={HIDDEN_TAB_OPTIONS}
       />
     </Tabs>
   );

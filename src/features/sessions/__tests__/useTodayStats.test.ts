@@ -48,8 +48,14 @@ beforeEach(async () => {
 
 describe('useTodayStats', () => {
   it('mount\'ta yükler; kayıt yoksa sıfır döner', async () => {
-    const { result } = renderHook(() => useTodayStats());
-    expect(result.current.loading).toBe(true);
+    // RNTL 14: await'li render bekleyen işleri boşaltır; geçici ilk durumu render sırasında yakala.
+    const loadingByRender: boolean[] = [];
+    const { result } = await renderHook(() => {
+      const stats = useTodayStats();
+      loadingByRender.push(stats.loading);
+      return stats;
+    });
+    expect(loadingByRender[0]).toBe(true);
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current).toMatchObject({ focusedMinutes: 0, sessions: 0, pickups: 0 });
     expect(useFocusEffect).toHaveBeenCalled();
@@ -57,14 +63,14 @@ describe('useTodayStats', () => {
 
   it('mevcut kayıtları okur ve dakikayı aşağı yuvarlar', async () => {
     await saveSession(rec(25 * MIN + 59_999, 2));
-    const { result } = renderHook(() => useTodayStats());
+    const { result } = await renderHook(() => useTodayStats());
     await waitFor(() => expect(result.current.sessions).toBe(1));
     expect(result.current.focusedMinutes).toBe(25);
     expect(result.current.pickups).toBe(2);
   });
 
   it('saveSession sonrası kendiliğinden yenilenir', async () => {
-    const { result } = renderHook(() => useTodayStats());
+    const { result } = await renderHook(() => useTodayStats());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -82,7 +88,7 @@ describe('useTodayStats', () => {
 
   it('clearAllSessions sonrası sıfırlanır; refresh elle çağrılabilir', async () => {
     await saveSession(rec(15 * MIN));
-    const { result } = renderHook(() => useTodayStats());
+    const { result } = await renderHook(() => useTodayStats());
     await waitFor(() => expect(result.current.focusedMinutes).toBe(15));
 
     await act(async () => {
@@ -97,10 +103,10 @@ describe('useTodayStats', () => {
   });
 
   it('unmount sonrası olaylara abone kalmaz', async () => {
-    const { result, unmount } = renderHook(() => useTodayStats());
+    const { result, unmount } = await renderHook(() => useTodayStats());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(sessionEvents.listenerCount()).toBe(1);
-    unmount();
+    await unmount();
     expect(sessionEvents.listenerCount()).toBe(0);
     await expect(saveSession(rec(5 * MIN))).resolves.toBe(1);
   });

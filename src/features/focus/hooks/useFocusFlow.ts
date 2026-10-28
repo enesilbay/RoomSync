@@ -93,9 +93,11 @@ export function useFocusFlow({ roomName, screenFocused, endOnBlur = false }: Opt
   const battery = useBatteryHint(prefs.minutes);
 
   const { finish, reset, focusedMs } = session;
+  // Ekrandan ayrılınca bitirme onayı render sırasında kapanır (effect içinde setState yok).
+  const endingOnBlur = endOnBlur && !screenFocused && active;
+  if (endingOnBlur && confirmingFinish) setConfirmingFinish(false);
   useEffect(() => {
     if (!endOnBlur || screenFocused || !active) return;
-    setConfirmingFinish(false);
     if (focusedMs > 0) {
       quietFinishRef.current = true;
       finish();

@@ -136,38 +136,38 @@ describe('useBreakAlert', () => {
   afterEach(() => jest.useRealTimers());
 
   it('kalkışta kurar, odak geri gelince iptal eder; ekran kapanınca kalanı iptal eder', async () => {
-    const { rerender, unmount } = renderHook((p: Props) => useBreakAlert({ ...p, breakLimitMs: LIMIT }), {
+    const { rerender, unmount } = await renderHook((p: Props) => useBreakAlert({ ...p, breakLimitMs: LIMIT }), {
       initialProps: { phase: 'focusing', leftDeskAt: null },
     });
     await flush();
     expect(mockScheduled).toHaveLength(0);
 
-    rerender({ phase: 'glancing', leftDeskAt: T0 });
+    await rerender({ phase: 'glancing', leftDeskAt: T0 });
     await flush();
     expect(mockScheduled).toHaveLength(1);
 
-    rerender({ phase: 'break', leftDeskAt: T0 });
+    await rerender({ phase: 'break', leftDeskAt: T0 });
     await flush();
     expect(mockScheduled).toHaveLength(1);
 
-    rerender({ phase: 'focusing', leftDeskAt: null });
+    await rerender({ phase: 'focusing', leftDeskAt: null });
     await flush();
     expect(mockCancelled).toEqual(['n1']);
 
-    rerender({ phase: 'glancing', leftDeskAt: T0 + 1000 });
+    await rerender({ phase: 'glancing', leftDeskAt: T0 + 1000 });
     await flush();
     expect(mockScheduled).toHaveLength(2);
-    unmount();
+    await unmount();
     await flush();
     expect(mockCancelled).toEqual(['n1', 'n2']);
   });
 
   it('bitişte (completed) iptal eder', async () => {
-    const { rerender } = renderHook((p: Props) => useBreakAlert({ ...p, breakLimitMs: LIMIT }), {
+    const { rerender } = await renderHook((p: Props) => useBreakAlert({ ...p, breakLimitMs: LIMIT }), {
       initialProps: { phase: 'glancing', leftDeskAt: T0 },
     });
     await flush();
-    rerender({ phase: 'completed', leftDeskAt: null });
+    await rerender({ phase: 'completed', leftDeskAt: null });
     await flush();
     expect(mockCancelled).toEqual(['n1']);
   });

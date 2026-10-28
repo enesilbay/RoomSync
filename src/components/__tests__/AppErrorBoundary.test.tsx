@@ -17,9 +17,9 @@ describe('AppErrorBoundary', () => {
     globalWithDev.__DEV__ = originalDev;
   });
 
-  it('Türkçe başlığı ve açıklamayı gösterir, hatayı logger.error ile kaydeder', () => {
+  it('Türkçe başlığı ve açıklamayı gösterir, hatayı logger.error ile kaydeder', async () => {
     const error = new Error('patladı');
-    render(<AppErrorBoundary error={error} retry={jest.fn().mockResolvedValue(undefined)} />);
+    await render(<AppErrorBoundary error={error} retry={jest.fn().mockResolvedValue(undefined)} />);
 
     expect(screen.getByText('Bir şeyler ters gitti')).toBeOnTheScreen();
     expect(screen.getByText(/Beklenmedik bir hata oluştu/)).toBeOnTheScreen();
@@ -28,24 +28,24 @@ describe('AppErrorBoundary', () => {
 
   it('"Tekrar dene" butonu erişilebilir ve retry çağırır', async () => {
     const retry = jest.fn().mockResolvedValue(undefined);
-    render(<AppErrorBoundary error={new Error('x')} retry={retry} />);
+    await render(<AppErrorBoundary error={new Error('x')} retry={retry} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Tekrar dene' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Tekrar dene' }));
 
     expect(retry).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.getByText('Tekrar dene')).toBeOnTheScreen());
   });
 
-  it('__DEV__ true iken hata mesajını gösterir', () => {
+  it('__DEV__ true iken hata mesajını gösterir', async () => {
     globalWithDev.__DEV__ = true;
-    render(<AppErrorBoundary error={new Error('gizli ayrıntı')} retry={jest.fn()} />);
+    await render(<AppErrorBoundary error={new Error('gizli ayrıntı')} retry={jest.fn()} />);
 
     expect(screen.getByText(/gizli ayrıntı/)).toBeOnTheScreen();
   });
 
-  it('__DEV__ false iken (production) hata mesajını gizler', () => {
+  it('__DEV__ false iken (production) hata mesajını gizler', async () => {
     globalWithDev.__DEV__ = false;
-    render(<AppErrorBoundary error={new Error('gizli ayrıntı')} retry={jest.fn()} />);
+    await render(<AppErrorBoundary error={new Error('gizli ayrıntı')} retry={jest.fn()} />);
 
     expect(screen.queryByText(/gizli ayrıntı/)).not.toBeOnTheScreen();
     expect(screen.queryByTestId('error-boundary-dev-details')).not.toBeOnTheScreen();

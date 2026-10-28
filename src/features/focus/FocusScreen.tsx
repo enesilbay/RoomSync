@@ -1,8 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Animated, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useLocalSearchParams, useRouter } from 'expo-router';
 import type { Socket } from 'socket.io-client';
 import { C } from '@/src/theme';
 import { BackgroundOrbs } from './components/BackgroundOrbs';
@@ -66,8 +65,8 @@ export default function FocusScreen() {
     updateMixerVolume,
   } = useAmbientSounds({ isEliteRoom, equippedSoundPack, isAtDesk, isFocused });
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(24)).current;
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [slideAnim] = useState(() => new Animated.Value(24));
 
   useEffect(() => {
     Animated.parallel([
@@ -136,7 +135,7 @@ export default function FocusScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.background} />
+      <StatusBar barStyle="dark-content" />
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <BackgroundOrbs isElite={isEliteRoom} />
       </View>
