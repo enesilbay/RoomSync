@@ -50,7 +50,8 @@
           "photosPermission": "The app accesses your photos to let you set a profile picture."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
