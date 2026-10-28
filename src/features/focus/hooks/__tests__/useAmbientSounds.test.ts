@@ -67,7 +67,7 @@ afterEach(() => {
 
 describe('useAmbientSounds', () => {
   it('ses modunu bir kez ayarlar ve her ses için sessiz, döngülü bir oynatıcı oluşturur', async () => {
-    const { result, rerender } = setup();
+    const { result, rerender } = await setup();
     await flushLoad();
 
     expect(mockAudioModeCalls).toHaveLength(1);
@@ -88,12 +88,12 @@ describe('useAmbientSounds', () => {
     });
 
     // Ses açık ama masada değil: çalmaz.
-    act(() => result.current.setIsSoundOn(true));
+    await act(() => result.current.setIsSoundOn(true));
     await advance(FADE_DURATION_MS);
     expect(mockPlayers.some(p => p.play.mock.calls.length > 0)).toBe(false);
 
     // Masaya bırakıldı: yalnızca seçili ses yumuşakça açılır.
-    rerender({ ...baseProps, isAtDesk: true });
+    await rerender({ ...baseProps, isAtDesk: true });
     const lib = playerFor(result, 'library');
     expect(lib.play).toHaveBeenCalledTimes(1);
     expect(lib.volume).toBe(0);
@@ -105,13 +105,13 @@ describe('useAmbientSounds', () => {
     expect(playerFor(result, 'rain').play).not.toHaveBeenCalled();
 
     // Yeni bir yükleme olmadıkça ses modu tekrar ayarlanmaz.
-    rerender({ ...baseProps, isAtDesk: false });
+    await rerender({ ...baseProps, isAtDesk: false });
     expect(mockAudioModeCalls).toHaveLength(1);
   });
 
   it('yükleme, istenen duruma göre bittiğinde oynatmayı senkronlar', async () => {
-    const { result } = setup({ isAtDesk: true });
-    act(() => result.current.setIsSoundOn(true));
+    const { result } = await setup({ isAtDesk: true });
+    await act(() => result.current.setIsSoundOn(true));
     // Yükleme henüz bitmeden istek verildi; bitince açılmalı.
     await flushLoad();
     await advance(FADE_DURATION_MS + 50);
@@ -121,14 +121,14 @@ describe('useAmbientSounds', () => {
   });
 
   it('telefon kaldırılınca sesi yumuşakça kısar ve sonra duraklatır', async () => {
-    const { result, rerender } = setup({ isAtDesk: true });
+    const { result, rerender } = await setup({ isAtDesk: true });
     await flushLoad();
-    act(() => result.current.setIsSoundOn(true));
+    await act(() => result.current.setIsSoundOn(true));
     await advance(FADE_DURATION_MS + 50);
     const lib = playerFor(result, 'library');
     expect(lib.volume).toBe(1);
 
-    rerender({ ...baseProps, isAtDesk: false });
+    await rerender({ ...baseProps, isAtDesk: false });
     expect(lib.pause).not.toHaveBeenCalled();
     await advance(FADE_DURATION_MS / 2);
     expect(lib.volume).toBeGreaterThan(0);
@@ -140,9 +140,9 @@ describe('useAmbientSounds', () => {
   });
 
   it('yeni bir geçiş süren fade’i iptal eder ve mevcut seviyeden devam eder', async () => {
-    const { result, rerender } = setup({ isAtDesk: true });
+    const { result, rerender } = await setup({ isAtDesk: true });
     await flushLoad();
-    act(() => result.current.setIsSoundOn(true));
+    await act(() => result.current.setIsSoundOn(true));
     await advance(FADE_DURATION_MS / 2);
     const lib = playerFor(result, 'library');
     const mid = lib.volume;
@@ -150,7 +150,7 @@ describe('useAmbientSounds', () => {
     expect(mid).toBeLessThan(1);
 
     // Açılış yarıdayken kaldırıldı: yükselmeye devam etmez, aşağı iner.
-    rerender({ ...baseProps, isAtDesk: false });
+    await rerender({ ...baseProps, isAtDesk: false });
     await advance(100);
     expect(lib.volume).toBeLessThan(mid);
     await advance(FADE_DURATION_MS);
@@ -160,24 +160,24 @@ describe('useAmbientSounds', () => {
   });
 
   it('ekran odaktan çıkınca fade beklemeden hemen duraklatır', async () => {
-    const { result, rerender } = setup({ isAtDesk: true });
+    const { result, rerender } = await setup({ isAtDesk: true });
     await flushLoad();
-    act(() => result.current.setIsSoundOn(true));
+    await act(() => result.current.setIsSoundOn(true));
     await advance(FADE_DURATION_MS + 50);
     const lib = playerFor(result, 'library');
 
-    rerender({ ...baseProps, isAtDesk: true, isFocused: false });
+    await rerender({ ...baseProps, isAtDesk: true, isFocused: false });
     expect(lib.pause).toHaveBeenCalledTimes(1);
     expect(lib.volume).toBe(0);
   });
 
   it('paket değişince eski oynatıcıları bırakır', async () => {
-    const { rerender, result } = setup();
+    const { rerender, result } = await setup();
     await flushLoad();
     const oldPlayers = [...mockPlayers];
     expect(oldPlayers).toHaveLength(4);
 
-    rerender({ ...baseProps, equippedSoundPack: 'rainy' });
+    await rerender({ ...baseProps, equippedSoundPack: 'rainy' });
     oldPlayers.forEach(p => expect(p.remove).toHaveBeenCalledTimes(1));
     await flushLoad();
 
@@ -188,13 +188,13 @@ describe('useAmbientSounds', () => {
   });
 
   it('eski paketin yarım kalan yüklemesi yeni pakete sızmaz', async () => {
-    const { result, rerender } = setup({ isAtDesk: true });
+    const { result, rerender } = await setup({ isAtDesk: true });
     // Yalnızca ses modu çözülsün: ilk oynatıcı oluşur, gerisi setTimeout bekler.
     await act(async () => {});
     expect(mockPlayers).toHaveLength(1);
     const staleFirst = mockPlayers[0];
 
-    rerender({ ...baseProps, isAtDesk: true, equippedSoundPack: 'fireplace' });
+    await rerender({ ...baseProps, isAtDesk: true, equippedSoundPack: 'fireplace' });
     await flushLoad();
 
     // Eski kuşak bırakıldı ve devamını oluşturmadı.
@@ -203,7 +203,7 @@ describe('useAmbientSounds', () => {
     expect(livePlayers()).toHaveLength(SOUND_PACK_PRESETS.fireplace.length);
     expect(livePlayers()).not.toContain(staleFirst);
 
-    act(() => result.current.setIsSoundOn(true));
+    await act(() => result.current.setIsSoundOn(true));
     await advance(FADE_DURATION_MS + 50);
     expect(staleFirst.play).not.toHaveBeenCalled();
     expect(livePlayers()).toHaveLength(2);
@@ -212,14 +212,14 @@ describe('useAmbientSounds', () => {
   });
 
   it('unmount olunca tüm oynatıcıları bırakır ve fade’i durdurur', async () => {
-    const { result, unmount } = setup({ isAtDesk: true });
+    const { result, unmount } = await setup({ isAtDesk: true });
     await flushLoad();
-    act(() => result.current.setIsSoundOn(true));
+    await act(() => result.current.setIsSoundOn(true));
     await advance(FADE_DURATION_MS / 3);
     const lib = playerFor(result, 'library');
     const volumeAtUnmount = lib.volume;
 
-    unmount();
+    await unmount();
     mockPlayers.forEach(p => expect(p.remove).toHaveBeenCalledTimes(1));
     await advance(FADE_DURATION_MS * 2);
     expect(lib.volume).toBe(volumeAtUnmount);
@@ -227,24 +227,24 @@ describe('useAmbientSounds', () => {
   });
 
   it('mikser kanal seslerini uygular ve fade hedef sesi korur', async () => {
-    const { result, rerender } = setup({ isAtDesk: true });
+    const { result, rerender } = await setup({ isAtDesk: true });
     await flushLoad();
-    act(() => result.current.setIsSoundOn(true));
+    await act(() => result.current.setIsSoundOn(true));
     await advance(FADE_DURATION_MS + 50);
     const lib = playerFor(result, 'library');
     const rainPlayer = playerFor(result, 'rain');
 
     // Geçiş değil: anında uygulanır.
-    act(() => result.current.updateMixerVolume('rain', 0.4));
+    await act(() => result.current.updateMixerVolume('rain', 0.4));
     expect(rainPlayer.play).toHaveBeenCalledTimes(1);
     expect(rainPlayer.volume).toBe(0.4);
     expect(lib.volume).toBe(1);
 
     // Kaldır + bırak: her kanal kendi hedefine döner.
-    rerender({ ...baseProps, isAtDesk: false });
+    await rerender({ ...baseProps, isAtDesk: false });
     await advance(FADE_DURATION_MS + 50);
     expect(rainPlayer.pause).toHaveBeenCalledTimes(1);
-    rerender({ ...baseProps, isAtDesk: true });
+    await rerender({ ...baseProps, isAtDesk: true });
     await advance(FADE_DURATION_MS / 2);
     expect(rainPlayer.volume).toBeLessThan(0.4);
     await advance(FADE_DURATION_MS);
@@ -252,12 +252,12 @@ describe('useAmbientSounds', () => {
     expect(lib.volume).toBe(1);
 
     // Kanal 0'a çekilince duraklatılır.
-    act(() => result.current.updateMixerVolume('library', 0));
+    await act(() => result.current.updateMixerVolume('library', 0));
     expect(lib.volume).toBe(0);
     expect(lib.pause).toHaveBeenCalledTimes(2);
 
     // Tekli seçim: yalnızca seçilen ses çalar.
-    act(() => result.current.handleSingleSoundSelect('fire'));
+    await act(() => result.current.handleSingleSoundSelect('fire'));
     const firePlayer = playerFor(result, 'fire');
     expect(firePlayer.volume).toBe(1);
     expect(firePlayer.play).toHaveBeenCalledTimes(1);
@@ -265,8 +265,8 @@ describe('useAmbientSounds', () => {
     expect(result.current.volumes).toEqual({ library: 0, rain: 0, forest: 0, fire: 1 });
   });
 
-  it('Elite odada Derin Odak sesini listenin başına ekler', () => {
-    const { result } = setup({ isEliteRoom: true });
+  it('Elite odada Derin Odak sesini listenin başına ekler', async () => {
+    const { result } = await setup({ isEliteRoom: true });
     expect(result.current.availableSounds[0].key).toBe('deep_focus');
     expect(result.current.availableSounds).toHaveLength(SOUNDS.length + 1);
     expect(result.current.volumes).toEqual({ deep_focus: 1 });

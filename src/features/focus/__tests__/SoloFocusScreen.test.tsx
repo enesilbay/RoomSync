@@ -29,8 +29,8 @@ jest.mock('expo-sensors', () => ({
 
 jest.mock('../hooks/useAppActive', () => ({ useAppActive: () => true }));
 
-jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
+jest.mock('expo-router', () => ({
+  ...jest.requireActual('expo-router'),
   useIsFocused: () => true,
 }));
 
@@ -108,10 +108,10 @@ jest.mock('@/src/features/sessions', () => ({
 const FACE_UP = { x: 0, y: 0, z: -1 };
 const UPRIGHT = { x: 0, y: -1, z: 0 };
 
-function feed(v: { x: number; y: number; z: number }, durationMs: number) {
+async function feed(v: { x: number; y: number; z: number }, durationMs: number) {
   const steps = Math.round(durationMs / SAMPLE_INTERVAL_MS);
   for (let i = 0; i < steps; i++) {
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(SAMPLE_INTERVAL_MS);
       mockListener?.({ ...v, timestamp: Date.now() / 1000 });
     });
@@ -125,10 +125,10 @@ async function flush() {
 }
 
 async function renderAndStart(minutes: number) {
-  render(<SoloFocusScreen />);
+  await render(<SoloFocusScreen />);
   await flush();
-  fireEvent.press(screen.getByRole('radio', { name: `${minutes} dakika` }));
-  fireEvent.press(screen.getByRole('button', { name: 'Başlat' }));
+  await fireEvent.press(screen.getByRole('radio', { name: `${minutes} dakika` }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Başlat' }));
   await flush();
 }
 
@@ -140,7 +140,7 @@ beforeEach(() => {
   mockHaptics.length = 0;
   mockPlayers.length = 0;
   mockNetwork.length = 0;
-  global.fetch = jest.fn(() => {
+  globalThis.fetch = jest.fn(() => {
     mockNetwork.push('fetch');
     return Promise.reject(new Error('ağ yok'));
   }) as unknown as typeof fetch;
@@ -158,19 +158,19 @@ describe('SoloFocusScreen', () => {
     expect(screen.getByText('Telefonu masaya düz bırak')).toBeTruthy();
     expect(mockHaptics).toContain('impact:light');
 
-    feed(FACE_UP, 4000);
+    await feed(FACE_UP, 4000);
     expect(screen.getAllByText('Odaklanıyorsun').length).toBeGreaterThan(0);
     // Esnek mod, yüz yukarı: OLED minimal katman açık.
     expect(screen.getByTestId('focus-minimal')).toBeTruthy();
     expect(mockHaptics).toContain('notification:success');
 
-    feed(FACE_UP, 3000);
-    feed(UPRIGHT, 1000);
+    await feed(FACE_UP, 3000);
+    await feed(UPRIGHT, 1000);
     expect(screen.getByText('Kısa bakış')).toBeTruthy();
     expect(screen.queryByTestId('focus-minimal')).toBeNull();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Bitir' }));
-    fireEvent.press(screen.getByText('Evet, bitir'));
+    await fireEvent.press(screen.getByRole('button', { name: 'Bitir' }));
+    await fireEvent.press(screen.getByText('Evet, bitir'));
     await flush();
 
     expect(screen.getAllByText('Erken bitirildi').length).toBeGreaterThan(0);
@@ -184,10 +184,10 @@ describe('SoloFocusScreen', () => {
 
   it('süre dolunca tamamlanır: zil çalar, özet "Tamamlandı" ve Yeni oturum boşa döner', async () => {
     await renderAndStart(15);
-    feed(FACE_UP, 3000);
+    await feed(FACE_UP, 3000);
     expect(screen.getAllByText('Odaklanıyorsun').length).toBeGreaterThan(0);
 
-    act(() => {
+    await act(() => {
       jest.advanceTimersByTime(15 * 60_000);
     });
     await flush();
@@ -197,13 +197,13 @@ describe('SoloFocusScreen', () => {
     const chime = mockPlayers.find((p) => p.listened);
     expect(chime?.played).toBe(true);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Yeni oturum' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Yeni oturum' }));
     expect(screen.getByText('Hazır')).toBeTruthy();
   });
 
   it('hiç odaklanmadan Bitir: onay sormadan iptal eder, kayıt yok', async () => {
     await renderAndStart(25);
-    fireEvent.press(screen.getByRole('button', { name: 'Bitir' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Bitir' }));
     await flush();
     expect(screen.queryByText('Evet, bitir')).toBeNull();
     expect(screen.getByText('Hazır')).toBeTruthy();
@@ -211,14 +211,14 @@ describe('SoloFocusScreen', () => {
   });
 
   it('60 dk ve şarjda değilken pil önerisi gösterir; dokununca kapanır', async () => {
-    render(<SoloFocusScreen />);
+    await render(<SoloFocusScreen />);
     await flush();
     const hint = 'Uzun oturumlarda ekran açık kalır; şarja takman iyi olur.';
     expect(screen.queryByText(hint)).toBeNull();
 
-    fireEvent.press(screen.getByRole('radio', { name: '60 dakika' }));
+    await fireEvent.press(screen.getByRole('radio', { name: '60 dakika' }));
     expect(screen.getByText(hint)).toBeTruthy();
-    fireEvent.press(screen.getByText(hint));
+    await fireEvent.press(screen.getByText(hint));
     expect(screen.queryByText(hint)).toBeNull();
   });
 });

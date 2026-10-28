@@ -62,12 +62,12 @@ beforeEach(() => {
 
 describe('useFocusBrightness', () => {
   it('dim iken 0’a karartır, kapanınca kaydedilen değere döner', async () => {
-    const { result, rerender } = render({ keepAwake: true, dim: true });
+    const { result, rerender } = await render({ keepAwake: true, dim: true });
     await flush();
     expect(lastSet()).toBe(0);
     expect(result.current).toBe(true);
 
-    rerender({ keepAwake: true, dim: false });
+    await rerender({ keepAwake: true, dim: false });
     await flush();
     expect(lastSet()).toBe(0.7);
     expect(result.current).toBe(false);
@@ -77,9 +77,9 @@ describe('useFocusBrightness', () => {
     const pending = deferred<number>();
     mocked.get.mockReturnValueOnce(pending.promise);
 
-    const { result, rerender } = render({ keepAwake: true, dim: true });
+    const { result, rerender } = await render({ keepAwake: true, dim: true });
     await flush();
-    rerender({ keepAwake: true, dim: false });
+    await rerender({ keepAwake: true, dim: false });
     await flush();
 
     pending.resolve(0.7);
@@ -92,10 +92,10 @@ describe('useFocusBrightness', () => {
     const pending = deferred<void>();
     mocked.set.mockReturnValueOnce(pending.promise);
 
-    const { rerender } = render({ keepAwake: true, dim: true });
+    const { rerender } = await render({ keepAwake: true, dim: true });
     await flush();
     expect(lastSet()).toBe(0);
-    rerender({ keepAwake: true, dim: false });
+    await rerender({ keepAwake: true, dim: false });
     await flush();
 
     pending.resolve();
@@ -107,24 +107,24 @@ describe('useFocusBrightness', () => {
     const pending = deferred<number>();
     mocked.get.mockReturnValueOnce(pending.promise);
 
-    const { rerender } = render({ keepAwake: true, dim: true });
-    rerender({ keepAwake: true, dim: false });
-    rerender({ keepAwake: true, dim: true });
+    const { rerender } = await render({ keepAwake: true, dim: true });
+    await rerender({ keepAwake: true, dim: false });
+    await rerender({ keepAwake: true, dim: true });
     pending.resolve(0.7);
     await flush();
     expect(mocked.get).toHaveBeenCalledTimes(1);
     expect(lastSet()).toBe(0);
 
-    rerender({ keepAwake: true, dim: false });
+    await rerender({ keepAwake: true, dim: false });
     await flush();
     expect(lastSet()).toBe(0.7);
   });
 
   it('unmount’ta her zaman geri yükler', async () => {
-    const { unmount } = render({ keepAwake: true, dim: true });
+    const { unmount } = await render({ keepAwake: true, dim: true });
     await flush();
     expect(lastSet()).toBe(0);
-    unmount();
+    await unmount();
     await flush();
     expect(lastSet()).toBe(0.7);
   });
@@ -133,12 +133,12 @@ describe('useFocusBrightness', () => {
     jest.replaceProperty(Platform, 'OS', 'android');
     mocked.usingSystem.mockResolvedValue(true);
 
-    const { rerender } = render({ keepAwake: true, dim: true });
+    const { rerender } = await render({ keepAwake: true, dim: true });
     await flush();
     expect(lastSet()).toBe(0);
     expect(mocked.get).not.toHaveBeenCalled();
 
-    rerender({ keepAwake: true, dim: false });
+    await rerender({ keepAwake: true, dim: false });
     await flush();
     expect(mocked.restoreSystem).toHaveBeenCalledTimes(1);
     expect(mocked.set).toHaveBeenCalledTimes(1);
@@ -147,16 +147,16 @@ describe('useFocusBrightness', () => {
   it('iOS’ta orijinal okunamazsa hiç karartmaz', async () => {
     jest.spyOn(console, 'log').mockImplementation(() => undefined);
     mocked.get.mockRejectedValueOnce(new Error('yok'));
-    const { result } = render({ keepAwake: true, dim: true });
+    const { result } = await render({ keepAwake: true, dim: true });
     await flush();
     expect(mocked.set).not.toHaveBeenCalled();
     expect(result.current).toBe(false);
   });
 
   it('keepAwake etiketiyle açılır ve kapanır', async () => {
-    const { rerender } = render({ keepAwake: true, dim: false });
+    const { rerender } = await render({ keepAwake: true, dim: false });
     expect(mocked.activate).toHaveBeenCalledWith('roomsync-focus');
-    rerender({ keepAwake: false, dim: false });
+    await rerender({ keepAwake: false, dim: false });
     expect(mocked.deactivate).toHaveBeenCalledWith('roomsync-focus');
     await flush();
   });

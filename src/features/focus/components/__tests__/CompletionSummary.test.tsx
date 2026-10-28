@@ -18,8 +18,8 @@ const base: SessionSummary = {
 };
 
 describe('CompletionSummary', () => {
-  it('tamamlanan oturumun özetini gösterir', () => {
-    render(<CompletionSummary summary={base} onNewSession={jest.fn()} onClose={jest.fn()} />);
+  it('tamamlanan oturumun özetini gösterir', async () => {
+    await render(<CompletionSummary summary={base} onNewSession={jest.fn()} onClose={jest.fn()} />);
     expect(screen.getByText('Tamamlandı')).toBeTruthy();
     expect(screen.queryByText('Erken bitirildi')).toBeNull();
     expect(screen.getByLabelText('Odaklanılan süre: 25 dk')).toBeTruthy();
@@ -29,10 +29,10 @@ describe('CompletionSummary', () => {
     expect(screen.getByLabelText('Odak kalitesi: %84')).toBeTruthy();
   });
 
-  it('erken bitirileni ayırır; Yeni oturum ve Kapat çağrılır', () => {
+  it('erken bitirileni ayırır; Yeni oturum ve Kapat çağrılır', async () => {
     const onNewSession = jest.fn();
     const onClose = jest.fn();
-    render(
+    await render(
       <CompletionSummary
         summary={{ ...base, completed: false, focusedMs: 12 * 60_000 + 5_000, breaks: 0, breakMs: 0 }}
         onNewSession={onNewSession}
@@ -43,14 +43,14 @@ describe('CompletionSummary', () => {
     expect(screen.getByLabelText('Odaklanılan süre: 12 dk 5 sn')).toBeTruthy();
     expect(screen.getByLabelText('Mola: Yok')).toBeTruthy();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Yeni oturum' }));
-    fireEvent.press(screen.getByRole('button', { name: 'Kapat' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Yeni oturum' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Kapat' }));
     expect(onNewSession).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('özet yokken hiçbir şey göstermez', () => {
-    render(<CompletionSummary summary={null} onNewSession={jest.fn()} onClose={jest.fn()} />);
+  it('özet yokken hiçbir şey göstermez', async () => {
+    await render(<CompletionSummary summary={null} onNewSession={jest.fn()} onClose={jest.fn()} />);
     expect(screen.queryByText('Tamamlandı')).toBeNull();
     expect(screen.queryByText('Erken bitirildi')).toBeNull();
   });
