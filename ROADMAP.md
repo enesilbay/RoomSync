@@ -89,7 +89,7 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
   - Sabitlik kontrolü: |a| varyans penceresi (elde düz tutulan telefon sayılmasın)
   - Başta `isAvailableAsync` kontrolü
   - Yalnızca odak istendiğinde dinlesin (pil)
-- [ ] 🟡 Yüz yukarı / yüzüstü: z işaretini platforma göre normalize et, **iOS ve Android'de cihazda doğrula**. `DeviceMotion` gravity vektörünü alternatif olarak değerlendir. _(Kod hazır: `ANDROID_AXIS_SIGN`; fiziksel cihaz doğrulaması bekliyor.)_
+- [x] 🟡 Yüz yukarı / yüzüstü: z işaretini platforma göre normalize et, **iOS ve Android'de cihazda doğrula**. `DeviceMotion` gravity vektörünü alternatif olarak değerlendir. _(`ANDROID_AXIS_SIGN`; cihazda doğrulandı.)_
 - [x] Detector durum makinesi için birim testleri (sahte örnek serileriyle).
 
 ### Zamanlayıcı ve durum makinesi
@@ -136,9 +136,9 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
 - Detector testleri yeşil.
 - iOS ve Android'de fiziksel cihaz testi yapıldı.
 
-> 🟡 **Faz 1 kod olarak tamamlandı (2026-10-28); fiziksel cihaz testi bekliyor.** `typecheck`, `lint:strict`, 207 test, `expo-doctor` (18/18) ve Android/iOS bundle export'u yeşil. Hesapsız/internetsiz döngü testle doğrulandı (SoloFocusScreen testi).
+> ✅ **Faz 1 tamamlandı (2026-10-28); fiziksel cihaz testi yapıldı.** `typecheck`, `lint:strict`, 207 test, `expo-doctor` (18/18) ve Android/iOS bundle export'u yeşil. Hesapsız/internetsiz döngü testle doğrulandı (SoloFocusScreen testi).
 >
-> Cihazda doğrulanacaklar (iOS + Android):
+> Cihazda doğrulananlar:
 > - Yüz yukarı / yüzüstü algılama ve `ANDROID_AXIS_SIGN` işareti; eşiklerin (2 sn yerleşme, 0,5 sn ayrılma, 0,04 g sabitlik) gerçek masada davranışı
 > - Sıkı modda karartma + parlaklığın geri gelmesi; esnek moddaki minimal sayacın okunabilirliği
 > - Tam ekran katmanın sekme çubuğunu ve Android sistem çubuklarını kapatması
@@ -153,7 +153,7 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
 > - Mola bildirimi (uygulama arka plandayken) ve uygulama içi "Mola uzadı" uyarısı
 > - Sesler `scripts/audio/encode-sounds.sh` ile byte düzeyinde yeniden üretilebilir; bitiş zili projede üretildi
 > - Odadan çıkış aktif oturumu bitirir (odak varsa kaydedilir)
-> - Ses dosyalarının kaynak/lisans durumu `assets/sounds/CREDITS.md`'de; orijinal 4 kaydın lisansı Faz 7 öncesi doğrulanmalı
+> - Ses dosyalarının kaynak/lisans durumu `assets/sounds/CREDITS.md`'de; orijinal 4 kaydın kullanım hakkı proje sahibi tarafından doğrulandı
 
 ---
 
@@ -453,7 +453,7 @@ Sıra: önce navigasyon ve çekirdek ekran, sonra diğerleri.
   - iOS ve Android
 - [ ] Mağaza materyalleri: açık ve koyu tema ekran görüntüleri, TR/EN açıklama, gizlilik formları.
 - [ ] README yeniden yazılsın ([Ek B](#ek-b--readme-taslağı)) ve README.en.md eklensin.
-- [ ] LICENSE, CHANGELOG, CONTRIBUTING; ses dosyalarının lisans ve kaynak bilgileri.
+- [ ] LICENSE, CHANGELOG, CONTRIBUTING. (Ses lisans ve kaynak bilgileri Faz 1'de `assets/sounds/CREDITS.md`'ye yazıldı.)
 - [ ] **Son arayüz puanlaması:** Ek A ölçütleriyle yeniden değerlendirme; her kategori ≥ 9 olmalı.
 
 ---

@@ -6,10 +6,10 @@ Uygulamadaki tüm ortam sesleri `src/features/focus/constants.ts` içinden `requ
 
 | Dosya | Süre | Biçim | Boyut | Kaynak / lisans |
 | --- | --- | --- | --- | --- |
-| `rain.m4a` | 3:30,00 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 1,74 MB | ⚠️ Kaynak/lisans doğrulanmalı — mağaza yayını öncesi zorunlu |
-| `nature.m4a` | 4:00,00 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 1,98 MB | ⚠️ Kaynak/lisans doğrulanmalı — mağaza yayını öncesi zorunlu |
-| `library.m4a` | 3:57,01 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 1,97 MB | ⚠️ Kaynak/lisans doğrulanmalı — mağaza yayını öncesi zorunlu |
-| `fire.m4a` | 1:11,01 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 0,60 MB | ⚠️ Kaynak/lisans doğrulanmalı — mağaza yayını öncesi zorunlu |
+| `rain.m4a` | 3:30,00 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 1,74 MB | Kullanım hakkı proje sahibi tarafından doğrulandı (2026-10-28) |
+| `nature.m4a` | 4:00,00 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 1,98 MB | Kullanım hakkı proje sahibi tarafından doğrulandı (2026-10-28) |
+| `library.m4a` | 3:57,01 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 1,97 MB | Kullanım hakkı proje sahibi tarafından doğrulandı (2026-10-28) |
+| `fire.m4a` | 1:11,01 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 0,60 MB | Kullanım hakkı proje sahibi tarafından doğrulandı (2026-10-28) |
 | `deep-focus.m4a` | 1:30,00 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 0,74 MB | Proje içinde ffmpeg ile üretildi; lisans kısıtı yok |
 | `chime.m4a` | 0:01,50 | AAC-LC mono, 64 kbps, 44,1 kHz (.m4a) | 11,5 KB | Proje içinde üretildi; lisans kısıtı yok |
 
@@ -17,7 +17,7 @@ Uygulamadaki tüm ortam sesleri `src/features/focus/constants.ts` içinden `requ
 
 ## Orijinal kayıtlar
 
-İlk dört kaydın nereden geldiği bilinmiyor. Mağaza yayınından önce her biri için kaynak ve lisans bulunmalı. Bulunamazsa ses, lisansı belli bir kayıtla (ör. CC0) değiştirilmeli.
+İlk dört kaydın uygulamada kullanım hakkı proje sahibi tarafından doğrulandı (2026-10-28). Kayıtlar değiştirilirse yeni kaynağın lisansı bu tabloya yazılmalı.
 
 | Dosya | Orijinal | Kullanılan bölüm |
 | --- | --- | --- |
