@@ -10,6 +10,7 @@ import { C } from '@/src/theme';
 import { logger } from '@/src/lib/logger';
 import { io, Socket } from 'socket.io-client';
 import type { NotificationBehavior } from 'expo-notifications';
+import { BREAK_ALERT_TYPE } from '@/src/features/focus/notifications';
 
 // Expo Go (SDK 53+) Android push bildirimlerini desteklemiyor.
 // Tüm expo-notifications API'si sadece gerçek build'lerde yükleniyor.
@@ -44,12 +45,16 @@ if (!isExpoGo) {
   Notifications = require('expo-notifications') as NotificationsModule;
   Notifications!.setNotificationHandler({
     // shouldShowAlert (kullanımdan kalktı) yerine banner + liste; iOS'ta .alert = .banner + .list
-    handleNotification: async (): Promise<NotificationBehavior> => ({
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
+    handleNotification: async (notification): Promise<NotificationBehavior> => {
+      // Mola uyarısı ön planda uygulama içinde (titreşim + durum kartı) zaten veriliyor.
+      const inApp = notification.request.content.data?.type === BREAK_ALERT_TYPE;
+      return {
+        shouldPlaySound: !inApp,
+        shouldSetBadge: false,
+        shouldShowBanner: !inApp,
+        shouldShowList: !inApp,
+      };
+    },
   });
 }
 
@@ -227,6 +232,15 @@ export default function TabLayout() {
         options={{ href: null }}
       />
 
+      <Tabs.Screen
+        name="focus"
+        options={{
+          title: 'Odak',
+          tabBarIcon: ({ color, focused }: { color: string, focused: boolean }) => (
+            <FontAwesome5 size={focused ? 22 : 20} name="stopwatch" color={color} solid={focused} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="lobbies"
         options={{

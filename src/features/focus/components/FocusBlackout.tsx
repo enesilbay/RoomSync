@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { C } from '@/src/theme';
 
-// Telefon ters çevrilip masadayken ekranı tamamen karartan katman.
+// Telefon yüzüstü masadayken ekranı tamamen karartan katman (FocusOverlay içinde gösterilir).
 export function FocusBlackout() {
-  return <View pointerEvents="auto" style={s.focusBlackout} />;
+  return <View style={s.focusBlackout} testID="focus-blackout" />;
 }
 
 const s = StyleSheet.create({
-  focusBlackout: { ...StyleSheet.absoluteFillObject, backgroundColor: C.screenOff, zIndex: 9999, elevation: 9999 },
+  focusBlackout: { flex: 1, backgroundColor: C.screenOff },
 });

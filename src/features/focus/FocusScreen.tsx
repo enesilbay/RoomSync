@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Platform, StatusBar, StyleSheet, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Alert, Animated, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useIsFocused } from '@react-navigation/native';
@@ -8,32 +8,25 @@ import { C } from '@/src/theme';
 import { BackgroundOrbs } from './components/BackgroundOrbs';
 import { ChatDrawer } from './components/ChatDrawer';
 import { ChatFab } from './components/ChatFab';
-import { FocusBlackout } from './components/FocusBlackout';
 import { FocusHeader } from './components/FocusHeader';
-import { FocusStartButton } from './components/FocusStartButton';
+import { FocusPanel } from './components/FocusPanel';
 import { InviteFriendsSection } from './components/InviteFriendsSection';
 import { MixerModal } from './components/MixerModal';
 import { NudgeToast } from './components/NudgeToast';
 import { OfflineBanner } from './components/OfflineBanner';
-import { PomodoroCard } from './components/PomodoroCard';
-import { PomodoroModal } from './components/PomodoroModal';
 import { RoomUsersSection } from './components/RoomUsersSection';
 import { SoundSection } from './components/SoundSection';
-import { StatusCard } from './components/StatusCard';
-import { WebSensorToggle } from './components/WebSensorToggle';
 import { useAmbientSounds } from './hooks/useAmbientSounds';
-import { useAppActive } from './hooks/useAppActive';
 import { useChat } from './hooks/useChat';
-import { useDeskDetection } from './hooks/useDeskDetection';
-import { useFocusBrightness } from './hooks/useFocusBrightness';
+import { useFocusFlow } from './hooks/useFocusFlow';
 import { useNudgeToast } from './hooks/useNudgeToast';
 import { useOnlineFriends } from './hooks/useOnlineFriends';
-import { usePomodoro } from './hooks/usePomodoro';
+import { usePresenceSync } from './hooks/usePresenceSync';
 import { useRoomSocket } from './hooks/useRoomSocket';
 import { useUserPreferences } from './hooks/useUserPreferences';
 
 // Odak odası ekranı: hook'ları ve sunum bileşenlerini birleştirir.
-// Not: Hook çağrı sırası effect sırasını belirler; socket hook'u masa algılamadan önce gelmeli.
+// Odak akışı solo ekranla ortaktır (useFocusFlow + FocusPanel); oda yalnızca varlık, ses ve sosyal özellikleri ekler.
 export default function FocusScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -43,17 +36,23 @@ export default function FocusScreen() {
   const safeFullName = typeof fullName === 'string' && fullName.trim() !== '' ? fullName : 'Öğrenci';
 
   const isFocused = useIsFocused();
-  const appActive = useAppActive();
 
   const { storedUserId, isPremium, equippedSoundPack, checkPremiumStatus } = useUserPreferences(routeUserId);
 
   const isEliteRoom = params.isElite === 'true';
   const myUserId = storedUserId ?? routeUserId;
 
-  // Birden fazla hook'un paylaştığı durum: masa durumu ve oda socket'i.
-  const [isAtDesk, setIsAtDesk] = useState(false);
-  const previousDeskState = useRef<boolean | null>(null);
   const socketRef = useRef<Socket | null>(null);
+
+  // Oturum yerel geçmişe oda adıyla kaydedilir; odadan çıkınca aktif oturum biter.
+  const flow = useFocusFlow({
+    roomName: typeof roomName === 'string' ? roomName : null,
+    screenFocused: isFocused,
+    endOnBlur: true,
+  });
+  // Ses ve oda varlığı için "masada": yalnızca gerçekten odaklanırken.
+  const isAtDesk = flow.phase === 'focusing';
+  const presenceSync = usePresenceSync({ socketRef, presence: isFocused && isAtDesk, roomName });
 
   const {
     availableSounds,
@@ -103,17 +102,6 @@ export default function FocusScreen() {
 
   const { nudgeToast, nudgeAnim, showNudgeToast } = useNudgeToast();
 
-  const {
-    pomodoroSec,
-    pomodoroRunning,
-    focusRequested,
-    showPomodoroModal,
-    setShowPomodoroModal,
-    startPomodoro,
-    startFocusSession,
-    togglePomodoro,
-  } = usePomodoro(isAtDesk);
-
   const { totalScore, isConnected, roomUsers, sendNudge, challengeDuel, broadcastAtmosphere } = useRoomSocket({
     socketRef,
     roomName,
@@ -127,20 +115,9 @@ export default function FocusScreen() {
     setChatList,
     setVolumes,
     showNudgeToast,
+    onConnect: presenceSync.onConnect,
+    onBeforeDisconnect: presenceSync.onBeforeDisconnect,
   });
-
-  const { isPhoneFaceDownOnDesk, toggleWebSensor } = useDeskDetection({
-    isFocused,
-    appActive,
-    focusRequested,
-    roomName,
-    socketRef,
-    isAtDesk,
-    setIsAtDesk,
-    previousDeskState,
-  });
-
-  const focusScreenDimmed = useFocusBrightness({ isFocused, focusRequested, isAtDesk, isPhoneFaceDownOnDesk });
 
   const roomUserIds = new Set(roomUsers.map((u) => Number(u.userId)));
   const inviteableFriends = onlineFriends.filter((friend) => !roomUserIds.has(Number(friend.id)));
@@ -159,7 +136,7 @@ export default function FocusScreen() {
 
   return (
     <SafeAreaView style={s.safe}>
-      <StatusBar hidden={focusScreenDimmed} barStyle="dark-content" backgroundColor={C.background} />
+      <StatusBar barStyle="dark-content" backgroundColor={C.background} />
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <BackgroundOrbs isElite={isEliteRoom} />
       </View>
@@ -176,27 +153,8 @@ export default function FocusScreen() {
           onBack={() => router.replace('/lobbies')}
         />
 
-        {/* STATUS CARD */}
-        <StatusCard isAtDesk={isAtDesk} isEliteRoom={isEliteRoom} />
-
-        <FocusStartButton
-          focusRequested={focusRequested}
-          pomodoroRunning={pomodoroRunning}
-          onPress={startFocusSession}
-        />
-
-        {/* WEB İÇİN MANUEL SENSÖR SİMÜLASYONU */}
-        {Platform.OS === 'web' && (
-          <WebSensorToggle isAtDesk={isAtDesk} onPress={toggleWebSensor} />
-        )}
-
-        {/* POMODORO */}
-        <PomodoroCard
-          pomodoroSec={pomodoroSec}
-          pomodoroRunning={pomodoroRunning}
-          onOpenSettings={() => setShowPomodoroModal(true)}
-          onToggle={togglePomodoro}
-        />
+        {/* ODAK: durum, sayaç, mod, başlat/bitir, özet ve tam ekran katman */}
+        <FocusPanel flow={flow} variant={isEliteRoom ? 'elite' : 'room'} />
 
         {/* ATMOSFER & MIXER */}
         <SoundSection
@@ -239,13 +197,6 @@ export default function FocusScreen() {
 
       {!chatVisible && <ChatFab onPress={toggleChat} />}
 
-      {/* POMODORO MODAL */}
-      <PomodoroModal
-        visible={showPomodoroModal}
-        onSelect={startPomodoro}
-        onCancel={() => setShowPomodoroModal(false)}
-      />
-
       {/* MIXER MODAL */}
       <MixerModal
         visible={showMixer}
@@ -256,8 +207,6 @@ export default function FocusScreen() {
         onClose={() => setShowMixer(false)}
         onVolumeChange={updateMixerVolume}
       />
-
-      {focusScreenDimmed && <FocusBlackout />}
     </SafeAreaView>
   );
 }

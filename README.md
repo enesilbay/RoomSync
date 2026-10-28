@@ -6,10 +6,21 @@ Telefonu masaya bırak, odak sürenin başladığını telefon anlasın. RoomSyn
 
 > Bu proje, StudyLounge'ın mobil istemcisinden ayrılarak bağımsız olarak geliştirilmektedir. Şimdilik StudyLounge backend'ine bağlanır (`EXPO_PUBLIC_BACKEND_URL`); kendi backend'ine geçiş planlanıyor.
 
+## Nasıl çalışır
+
+1. **Odak** sekmesinde süreni seç ve **Başlat**'a bas (hesap gerekmez).
+2. Telefonu masaya bırak: birkaç saniye düz ve sabit kalınca sayaç başlar.
+   - **Esnek mod:** ekran yukarı ya da aşağı bakabilir; yukarı bakarsa siyah zeminde sade bir sayaç görünür.
+   - **Sıkı mod:** yalnızca ekranı aşağı bakan telefon sayılır; ekran kararır.
+3. Telefonu kaldırınca sayaç durur. 8 saniyeden kısa bakışlar mola sayılmaz; daha uzunsa mola başlar, 5 dakikayı geçince uyarılırsın.
+4. Süre dolunca titreşim ve zil çalar; özet kartında odak süresi, kaldırma sayısı ve **odak kalitesi** görünür. Oturum cihazına kaydedilir.
+
+Algılama yalnızca uygulama açıkken çalışır (iOS arka planda sensör okumaya izin vermez); bu yüzden oturum boyunca ekran açık tutulur.
+
 ## Teknoloji
 
 - Expo SDK 54 · React Native · TypeScript · Expo Router
-- `expo-sensors` (ivmeölçer), Socket.IO istemcisi
+- `expo-sensors` (ivmeölçer), `expo-audio`, `expo-sqlite`, `expo-haptics`, Socket.IO istemcisi
 - Jest (`jest-expo`) + React Native Testing Library, GitHub Actions
 
 ## Proje yapısı
@@ -18,12 +29,15 @@ Telefonu masaya bırak, odak sürenin başladığını telefon anlasın. RoomSyn
 app/                    Yalnızca Expo Router rotaları ve layout'lar
   (tabs)/               Sekmeli ekranlar (giriş, odalar, ben, odak)
 src/
-  features/focus/       Odak odası: hook'lar, bileşenler, tipler, sabitler
+  features/focus/       Odak: solo ve oda ekranları, ortak akış (useFocusFlow), bileşenler
+    engine/             Masa algılayıcı ve oturum durum makinesi (saf, testli)
+  features/sessions/    Cihazdaki oturum geçmişi (expo-sqlite; web'de AsyncStorage)
   components/           Paylaşılan UI bileşenleri (+ ErrorBoundary)
   lib/                  API, logger, rütbe, rota parametresi ve yükleme yardımcıları
   theme/                Renk, boşluk, köşe ve tipografi token'ları
   hooks/                Paylaşılan hook'lar
 scripts/typegen.js      Typed routes tiplerini dev server açmadan üretir
+scripts/audio/          Ortam seslerini ve bitiş zilini yeniden üreten ffmpeg script'i
 ```
 
 Kurallar: `app/` altına rota olmayan dosya konmaz; renkler yalnızca `src/theme` token'larından okunur (ESLint ham hex değerlerini engeller); log için `console` yerine `src/lib/logger` kullanılır.

@@ -30,6 +30,10 @@ type Options = {
   setChatList: Dispatch<SetStateAction<ChatMessage[]>>;
   setVolumes: Dispatch<SetStateAction<Record<string, number>>>;
   showNudgeToast: (senderName: string, message: string) => void;
+  /** Her (yeniden) bağlantıda join_lobby'den sonra çağrılır (ör. varlığı yeniden göndermek için). */
+  onConnect?: () => void;
+  /** Socket kapatılmadan hemen önce çağrılır; burada gönderilen olaylar kaybolmaz. */
+  onBeforeDisconnect?: () => void;
 };
 
 // Oda socket'i: bağlantı, olay dinleyicileri ve odaya giden olaylar (dürtme, düello, atmosfer).
@@ -46,6 +50,8 @@ export function useRoomSocket({
   setChatList,
   setVolumes,
   showNudgeToast,
+  onConnect,
+  onBeforeDisconnect,
 }: Options) {
   const [totalScore, setTotalScore] = useState(initialScore);
   const [isConnected, setIsConnected] = useState(true);
@@ -53,9 +59,9 @@ export function useRoomSocket({
 
   // Socket dinleyicileri en güncel değerleri bu ref'ten okur; böylece bu değerler
   // değiştiğinde socket yeniden bağlanmaz (yalnızca oda/odak değişince bağlanır).
-  const latestRef = useRef({ safeFullName, maxUsers, myUserId, showNudgeToast });
+  const latestRef = useRef({ safeFullName, maxUsers, myUserId, showNudgeToast, onConnect, onBeforeDisconnect });
   useEffect(() => {
-    latestRef.current = { safeFullName, maxUsers, myUserId, showNudgeToast };
+    latestRef.current = { safeFullName, maxUsers, myUserId, showNudgeToast, onConnect, onBeforeDisconnect };
   });
 
   useEffect(() => {
@@ -65,6 +71,7 @@ export function useRoomSocket({
       socketRef.current.on('connect', () => {
         setIsConnected(true);
         socketRef.current?.emit('join_lobby', { roomName, fullName: latestRef.current.safeFullName, maxUsers: latestRef.current.maxUsers });
+        latestRef.current.onConnect?.();
       });
       socketRef.current.on('disconnect', () => {
         setIsConnected(false);
@@ -143,7 +150,10 @@ export function useRoomSocket({
       initSocket();
     }
 
-    return () => { socketRef.current?.disconnect(); };
+    return () => {
+      latestRef.current.onBeforeDisconnect?.();
+      socketRef.current?.disconnect();
+    };
   }, [roomName, isFocused, socketRef, setChatList, setVolumes]);
 
   // Nudge: Odadaki bir kullanıcıya dürtme gönder
