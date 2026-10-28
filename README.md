@@ -23,8 +23,10 @@ Telefon ve bilgisayar aynı ağda olmalı; `192.168.x.x` yerine bilgisayarının
 
 | Komut | Açıklama |
 | :--- | :--- |
-| `npm run typecheck` | TypeScript tip kontrolü |
+| `npm run typecheck` | Typed routes tiplerini üretir (`typegen`) ve TypeScript tip kontrolü yapar |
+| `npm run typegen` | `.expo/types/router.d.ts` dosyasını dev server açmadan üretir |
 | `npm run lint` | ESLint |
+| `npm run lint:strict` | ESLint, uyarılara da izin vermez (`--max-warnings 0`) |
 
 ## Yol haritası
 

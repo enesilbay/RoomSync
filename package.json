@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "lint:strict": "expo lint --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "typegen": "node scripts/typegen.js",
+    "typecheck": "npm run typegen && tsc --noEmit"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
