@@ -38,6 +38,11 @@ export type DeskDetectorConfig = {
   /** Sabitlik penceresi ve izin verilen ivme büyüklüğü standart sapması (g). */
   stillnessWindowMs: number;
   stillnessMaxStdDev: number;
+  /**
+   * Masadayken sabitliği kaybetme eşiği (g). Verilmezse stillnessMaxStdDev kullanılır.
+   * Masaya hafif vuruş gibi kısa sarsıntılar molaya düşürmesin diye girişten büyük tutulur.
+   */
+  stillnessExitStdDev?: number;
 };
 
 /** idle → waiting → focusing ⇄ glancing → break → … → completed */

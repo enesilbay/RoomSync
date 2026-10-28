@@ -5,79 +5,102 @@ import * as Brightness from 'expo-brightness';
 import { logger } from '@/src/lib/logger';
 
 type Options = {
-  isFocused: boolean;
-  focusRequested: boolean;
-  isAtDesk: boolean;
-  isPhoneFaceDownOnDesk: boolean;
+  /** Odak sırasında ekran kendiliğinden kilitlenmesin (kilitlenirse uygulama arka plana düşer). */
+  keepAwake: boolean;
+  /** Ekranı 0 parlaklığa karart. */
+  dim: boolean;
 };
 
-// Odak sırasında ekranı uyanık tutar; telefon ters çevrilip masadayken ekranı karartır.
-export function useFocusBrightness({ isFocused, focusRequested, isAtDesk, isPhoneFaceDownOnDesk }: Options) {
-  const [focusScreenDimmed, setFocusScreenDimmed] = useState(false);
-  const brightnessBeforeFocusRef = useRef<number | null>(null);
+const KEEP_AWAKE_TAG = 'roomsync-focus';
+const IS_WEB = Platform.OS === 'web';
 
-  const restoreFocusBrightness = async () => {
-    if (Platform.OS === 'web' || brightnessBeforeFocusRef.current === null) return;
+/** Karartmadan önceki durum: Android'de pencere sistem parlaklığını mı izliyordu, yoksa sabit değer mi. */
+type Original = { value: number; usingSystem: boolean };
 
-    const brightness = brightnessBeforeFocusRef.current;
-    brightnessBeforeFocusRef.current = null;
-
-    try {
-      await Brightness.setBrightnessAsync(brightness);
-    } catch {
-      logger.debug('Parlaklık geri yüklenemedi');
+async function readOriginal(): Promise<Original | null> {
+  try {
+    if (Platform.OS === 'android' && (await Brightness.isUsingSystemBrightnessAsync())) {
+      return { value: -1, usingSystem: true };
     }
-  };
+    return { value: await Brightness.getBrightnessAsync(), usingSystem: false };
+  } catch {
+    logger.debug('Parlaklık okunamadı');
+    // Android'de sistem parlaklığına dönmek her zaman güvenli; iOS'ta bilinmeyen değere karartma yapılmaz.
+    return Platform.OS === 'android' ? { value: -1, usingSystem: true } : null;
+  }
+}
 
-  // Odak modu acikken ekran kendiliginden kilitlenmesin (parlaklik zaten kisiliyor);
-  // aksi halde telefon masada dururken uygulama arka plana duser ve odak kesilir.
+async function restore(original: Original | null): Promise<void> {
+  if (Platform.OS === 'android' && (original === null || original.usingSystem)) {
+    await Brightness.restoreSystemBrightnessAsync();
+  } else if (original !== null) {
+    await Brightness.setBrightnessAsync(original.value);
+  }
+}
+
+// Odakta ekranı uyanık tutar ve istenince karartır. Eski sürümdeki yarış (getBrightness'ın
+// dim kapandıktan sonra çözülüp ekranı 0'da bırakması) şöyle önlenir: tüm parlaklık işlemleri
+// tek bir zincirde sırayla çalışır ve her await sonrası güncel istek (wantDimRef) yeniden okunur;
+// istenen ile uygulanan eşitlenene kadar döngü sürer. Orijinal değer karartma döngüsü başına bir kez saklanır.
+export function useFocusBrightness({ keepAwake, dim }: Options): boolean {
+  const [dimApplied, setDimApplied] = useState(false);
+  const wantDimRef = useRef(false);
+  const appliedRef = useRef(false);
+  const originalRef = useRef<Original | null>(null);
+  const chainRef = useRef<Promise<void>>(Promise.resolve());
+  const mountedRef = useRef(false);
+
   useEffect(() => {
-    if (Platform.OS === 'web' || !isFocused || !focusRequested) return;
-    const tag = 'roomsync-focus';
-    activateKeepAwakeAsync(tag).catch(() => undefined);
+    if (IS_WEB || !keepAwake) return;
+    activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => undefined);
     return () => {
-      deactivateKeepAwake(tag).catch(() => undefined);
+      deactivateKeepAwake(KEEP_AWAKE_TAG).catch(() => undefined);
     };
-  }, [isFocused, focusRequested]);
+  }, [keepAwake]);
 
   useEffect(() => {
-    if (Platform.OS === 'web') {
-      setFocusScreenDimmed(false);
-      return;
-    }
+    if (IS_WEB) return;
+    mountedRef.current = true;
 
-    let mounted = true;
-    const shouldDimScreen = isFocused && isAtDesk && isPhoneFaceDownOnDesk && focusRequested;
-
-    const syncScreenBrightness = async () => {
-      if (shouldDimScreen) {
+    const reconcile = async () => {
+      for (;;) {
+        const want = wantDimRef.current;
+        if (want === appliedRef.current) return;
         try {
-          if (brightnessBeforeFocusRef.current === null) {
-            brightnessBeforeFocusRef.current = await Brightness.getBrightnessAsync();
+          if (want) {
+            if (originalRef.current === null) {
+              const original = await readOriginal();
+              if (original === null) return;
+              originalRef.current = original;
+              continue; // await sonrası istek değişmiş olabilir
+            }
+            // Hata olsa bile kararmış olabilir; geri yükleme denensin diye önce işaretle.
+            appliedRef.current = true;
+            await Brightness.setBrightnessAsync(0);
+            if (mountedRef.current && wantDimRef.current) setDimApplied(true);
+          } else {
+            await restore(originalRef.current);
+            appliedRef.current = false;
+            originalRef.current = null;
           }
-          await Brightness.setBrightnessAsync(0);
-          if (mounted) setFocusScreenDimmed(true);
         } catch {
-          logger.debug('Odak ekranı karartılamadı');
+          logger.debug(want ? 'Odak ekranı karartılamadı' : 'Parlaklık geri yüklenemedi');
+          return; // Sonsuz yeniden denemeye girme; bir sonraki istek değişiminde tekrar denenir.
         }
-      } else {
-        if (mounted) setFocusScreenDimmed(false);
-        await restoreFocusBrightness();
       }
     };
 
-    syncScreenBrightness();
+    wantDimRef.current = dim;
+    if (!dim) setDimApplied(false);
+    chainRef.current = chainRef.current.then(reconcile);
 
     return () => {
-      mounted = false;
+      // Unmount'ta (ve StrictMode'un sahte unmount'unda) her zaman geri yükle; yeniden mount isteği tekrar uygular.
+      mountedRef.current = false;
+      wantDimRef.current = false;
+      chainRef.current = chainRef.current.then(reconcile);
     };
-  }, [isFocused, isAtDesk, isPhoneFaceDownOnDesk, focusRequested]);
+  }, [dim]);
 
-  useEffect(() => {
-    return () => {
-      restoreFocusBrightness();
-    };
-  }, []);
-
-  return focusScreenDimmed;
+  return dim && dimApplied;
 }
