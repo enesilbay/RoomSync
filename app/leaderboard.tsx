@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { apiUrl, assetUrl } from './config/api';
-import { AppScreen, PageHeader, SoftCard } from './components/common';
-import { FramedAvatar } from './components/FramedAvatar';
-import { C } from './(tabs)/sensor';
-import { getRankInfo } from './utils/rank';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { AppScreen, PageHeader, SoftCard } from '@/src/components/common';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C } from '@/src/theme';
+import { getRankInfo } from '@/src/lib/rank';
 
 const T = C;
 
@@ -28,7 +28,7 @@ export default function LeaderboardScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setIsLoading(true);
     setError('');
     try {
@@ -48,11 +48,12 @@ export default function LeaderboardScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [tab]);
 
+  // Sekme değişince tabloyu yeniden yükle
   useEffect(() => {
     fetchLeaderboard();
-  }, [tab]);
+  }, [fetchLeaderboard]);
 
   return (
     <AppScreen>
@@ -99,7 +100,7 @@ export default function LeaderboardScreen() {
                   {index === 0 ? (
                     <FontAwesome5 solid name="crown" size={22} color={T.accent} />
                   ) : index < 3 ? (
-                    <FontAwesome5 solid name="medal" size={21} color={index === 1 ? '#94A3B8' : '#B45309'} />
+                    <FontAwesome5 solid name="medal" size={21} color={index === 1 ? T.medal.silver : T.medal.bronze} />
                   ) : (
                     <Text style={styles.rankText}>{index + 1}</Text>
                   )}
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   tabButton: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 12 },
   tabActive: { backgroundColor: T.primary },
   tabText: { color: T.textMuted, fontSize: 14, fontWeight: '700' },
-  tabTextActive: { color: '#FFF', fontWeight: '900' },
+  tabTextActive: { color: T.onColor, fontWeight: '900' },
   list: { gap: 12, paddingBottom: 110 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 },
   topRow: { backgroundColor: T.lightAmber, borderColor: T.accent },

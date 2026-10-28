@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+# Aynı dal / PR için yeni bir push geldiğinde eski çalıştırmayı iptal et.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  EXPO_NO_TELEMETRY: 1
+
+jobs:
+  quality:
+    name: Typecheck, lint, test, expo-doctor
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # typegen -> .expo/types/router.d.ts ve expo-env.d.ts üretir, ardından tsc --noEmit.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint (0 uyarı)
+        run: npm run lint:strict
+
+      - name: Test
+        run: npm run test:ci
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Expo Doctor
+        run: npx expo-doctor
+
+      # Expo'nun geçişli bağımlılıklarında sık sık advisory çıkıyor; şimdilik
+      # yalnızca raporla, build'i kırma.
+      - name: npm audit (bilgi amaçlı)
+        continue-on-error: true
+        run: npm audit --audit-level=high

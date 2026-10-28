@@ -5,9 +5,11 @@ import { Platform, Alert } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiUrl, BACKEND_URL } from '../config/api';
-import { C } from './sensor';
+import { apiUrl, BACKEND_URL } from '@/src/lib/api';
+import { C } from '@/src/theme';
+import { logger } from '@/src/lib/logger';
 import { io, Socket } from 'socket.io-client';
+import type { NotificationBehavior } from 'expo-notifications';
 
 // Expo Go (SDK 53+) Android push bildirimlerini desteklemiyor.
 // Tüm expo-notifications API'si sadece gerçek build'lerde yükleniyor.
@@ -23,14 +25,26 @@ type NotificationData = {
   roomName?: unknown;
 };
 
+// AsyncStorage'daki 'user_data' içinden oda davetinde kullanılan alanlar
+type StoredUser = {
+  id?: number;
+  fullName?: string;
+  totalFocusMinutes?: number;
+};
+
+type NudgePayload = {
+  message?: string;
+  senderName?: string;
+};
+
 let Notifications: NotificationsModule | null = null;
 
 if (!isExpoGo) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   Notifications = require('expo-notifications') as NotificationsModule;
   Notifications!.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
+    // shouldShowAlert (kullanımdan kalktı) yerine banner + liste; iOS'ta .alert = .banner + .list
+    handleNotification: async (): Promise<NotificationBehavior> => ({
       shouldPlaySound: true,
       shouldSetBadge: false,
       shouldShowBanner: true,
@@ -46,17 +60,18 @@ export default function TabLayout() {
   useEffect(() => {
     const openNotificationTarget = (data?: NotificationData) => {
       if (data?.type === 'room_invite' && typeof data.roomName === 'string') {
+        const roomName = data.roomName;
         AsyncStorage.getItem('user_data').then((stored) => {
-          const user = stored ? JSON.parse(stored) : {};
+          const user: StoredUser = stored ? JSON.parse(stored) : {};
           router.push({
             pathname: '/sensor',
             params: {
               id: user.id,
               fullName: user.fullName,
               score: user.totalFocusMinutes,
-              roomName: data.roomName,
+              roomName,
             },
-          } as any);
+          });
         }).catch(() => {});
         return;
       }
@@ -72,7 +87,7 @@ export default function TabLayout() {
           targetName: typeof data.targetName === 'string' ? data.targetName : 'Mesaj',
           targetUsername: typeof data.targetUsername === 'string' ? data.targetUsername : '',
         },
-      } as any);
+      });
     };
 
     const responseSub = Notifications?.addNotificationResponseReceivedListener((response) => {
@@ -101,7 +116,7 @@ export default function TabLayout() {
       if (token) {
         globalSocket = io(BACKEND_URL, { transports: ['websocket'], auth: { token } });
         
-        globalSocket.on('nudge_received', (data: any) => {
+        globalSocket.on('nudge_received', (data: NudgePayload) => {
           Alert.alert('👋 Dürtüldün!', data.message || `${data.senderName} seni çalışmaya davet ediyor!`);
         });
       }
@@ -130,10 +145,10 @@ export default function TabLayout() {
           },
           body: JSON.stringify({ token }),
         });
-        console.log("Push token backend'e kaydedildi.");
+        logger.debug("Push token backend'e kaydedildi.");
       }
     } catch (e) {
-      console.error('Push token kaydedilirken hata:', e);
+      logger.error('Push token kaydedilirken hata:', e);
     }
   }
 
@@ -160,13 +175,13 @@ export default function TabLayout() {
           Constants.expoConfig?.extra?.eas?.projectId ??
           Constants.easConfig?.projectId;
         if (!projectId) {
-          console.warn('Push bildirimleri için projectId bulunamadı.');
+          logger.warn('Push bildirimleri için projectId bulunamadı.');
           return undefined;
         }
         token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-        console.log('Expo Push Token:', token);
+        logger.debug('Expo Push Token:', token);
       } catch (e) {
-        console.error('Push token alınamadı:', e);
+        logger.error('Push token alınamadı:', e);
       }
     }
 
@@ -175,7 +190,7 @@ export default function TabLayout() {
         name: 'default',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
+        lightColor: C.notification.lightColor,
       });
     }
 
@@ -198,7 +213,7 @@ export default function TabLayout() {
           paddingBottom: 8,
           paddingTop: 8,
           elevation: 10,
-          shadowColor: '#000',
+          shadowColor: C.shadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
           shadowRadius: 15,

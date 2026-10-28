@@ -10,23 +10,35 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  type KeyboardEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { io, Socket } from 'socket.io-client';
-import { apiUrl, assetUrl } from './config/api';
-import { FramedAvatar } from './components/FramedAvatar';
-import { C } from './(tabs)/sensor';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C } from '@/src/theme';
+import { logger } from '@/src/lib/logger';
 
 const BACKEND_URL = apiUrl('');
 const T = C;
 
+// Sunucudan gelen DM kaydı (geçmiş ve canlı 'receive_dm' aynı biçimde)
+type DmMessage = {
+  id: number | string;
+  text: string;
+  senderId?: number;
+  receiverId?: number;
+  sender?: { id: number };
+  createdAt?: string;
+};
+
 export default function DMScreen() {
   const router = useRouter();
   const { targetUserId, targetName, targetUsername, targetAvatarUrl, targetProfileFrame } = useLocalSearchParams();
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<DmMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [myUserId, setMyUserId] = useState<number>(0);
   const [myBubbleColor, setMyBubbleColor] = useState<string>(T.primary);
@@ -41,7 +53,7 @@ export default function DMScreen() {
   const inputBottom = keyboardBottom > 0 ? keyboardBottom + 8 : baseBottom;
 
   useEffect(() => {
-    const updateKeyboardBottom = (event: any) => {
+    const updateKeyboardBottom = (event: KeyboardEvent) => {
       const windowHeight = Dimensions.get('window').height;
       const keyboardTop = event?.endCoordinates?.screenY;
       const nextBottom = typeof keyboardTop === 'number'
@@ -66,17 +78,15 @@ export default function DMScreen() {
       try {
         const token = await AsyncStorage.getItem('access_token');
         
-        let uid = myUserId;
         const stored = await AsyncStorage.getItem('user_data');
         if (stored) {
           const user = JSON.parse(stored);
-          uid = user.id;
           setMyUserId(user.id);
           if (user.equippedBubbleColor) setMyBubbleColor(user.equippedBubbleColor);
         } else {
           const meRes = await fetch(apiUrl('/users/me'), { headers: { Authorization: `Bearer ${token}` } });
           const meData = await meRes.json();
-          uid = meData.user.id;
+          const uid = meData.user.id;
           setMyUserId(uid);
           if (meData.user.equippedBubbleColor) setMyBubbleColor(meData.user.equippedBubbleColor);
         }
@@ -89,7 +99,7 @@ export default function DMScreen() {
           setMessages(data);
         }
       } catch (err) {
-        console.log(err);
+        logger.debug(err);
       } finally {
         setIsLoading(false);
       }
@@ -103,7 +113,7 @@ export default function DMScreen() {
       const token = await AsyncStorage.getItem('access_token');
       socketRef.current = io(BACKEND_URL, { transports: ['websocket'], auth: { token } });
       
-      socketRef.current.on('receive_dm', (msg: any) => {
+      socketRef.current.on('receive_dm', (msg: DmMessage) => {
         if (
           (msg.senderId === myUserId && msg.receiverId === Number(targetUserId)) ||
           (msg.senderId === Number(targetUserId) && msg.receiverId === myUserId)
@@ -139,7 +149,7 @@ export default function DMScreen() {
           size={44}
           colors={T}
           backgroundColor={T.primary}
-          textColor="#FFFFFF"
+          textColor={T.onColor}
           textSize={17}
           style={styles.headerAvatar}
           textStyle={styles.headerAvatarText}
@@ -208,7 +218,7 @@ export default function DMScreen() {
           onSubmitEditing={sendMessage}
         />
         <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
-          <FontAwesome5 name="paper-plane" solid size={16} color="#fff" />
+          <FontAwesome5 name="paper-plane" solid size={16} color={T.onColor} />
         </TouchableOpacity>
       </View>
     </View>
@@ -225,7 +235,7 @@ const styles = StyleSheet.create({
     backgroundColor: T.surface,
     borderBottomWidth: 1,
     borderBottomColor: T.border,
-    shadowColor: '#000',
+    shadowColor: T.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
@@ -246,7 +256,7 @@ const styles = StyleSheet.create({
   headerAvatar: {
     marginRight: 12,
   },
-  headerAvatarText: { color: '#FFFFFF', fontSize: 17, fontWeight: '900' },
+  headerAvatarText: { color: T.onColor, fontSize: 17, fontWeight: '900' },
   headerInfo: { flex: 1 },
   headerLabel: { color: T.accent, fontSize: 11, fontWeight: '900', letterSpacing: 0.8, marginBottom: 2 },
   headerName: { fontSize: 19, fontWeight: '900', color: T.textDark },
@@ -275,7 +285,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     gap: 10,
-    shadowColor: '#000',
+    shadowColor: T.shadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 14,
@@ -306,7 +316,7 @@ const styles = StyleSheet.create({
   myBubble: { backgroundColor: T.primary, borderBottomRightRadius: 4 },
   theirBubble: { backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderBottomLeftRadius: 4 },
   msgText: { fontSize: 15, lineHeight: 20 },
-  myMsgText: { color: '#fff' },
+  myMsgText: { color: T.onColor },
   theirMsgText: { color: T.textDark },
   timeText: { fontSize: 10, color: T.textMuted, marginTop: 4, paddingHorizontal: 4 },
 });

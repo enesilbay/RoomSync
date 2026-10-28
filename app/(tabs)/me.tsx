@@ -4,16 +4,16 @@ import {
   StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, RefreshControl, Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { apiUrl, assetUrl } from '../config/api';
-import { FramedAvatar } from '../components/FramedAvatar';
-import { FocusSummaryStrip } from '../components/common';
-import { C } from './sensor';
-import { getRankInfo, getRankProgress } from '../utils/rank';
-import { Theme } from '../utils/theme';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { FocusSummaryStrip } from '@/src/components/common';
+import { C, Theme } from '@/src/theme';
+import { getRankInfo, getRankProgress } from '@/src/lib/rank';
+import { logger } from '@/src/lib/logger';
 
 const T = C;
 
@@ -42,18 +42,41 @@ type Friend = {
   currentRoom?: string;
 };
 
-const QUICK_ACTIONS = [
-  { id: 'messages', icon: 'comment-dots', label: 'Mesajlar', color: '#4F46E5', bg: '#EEF2FF', route: null },
-  { id: 'shop', icon: 'shopping-cart', label: 'Mağaza', color: '#D97706', bg: '#FEF3C7', route: '/shop' },
-  { id: 'analytics', icon: 'chart-line', label: 'Analitik', color: '#059669', bg: '#D1FAE5', route: '/analytics' },
-  { id: 'leaderboard', icon: 'trophy', label: 'Liderlik', color: '#7C3AED', bg: '#EDE9FE', route: '/leaderboard' },
+// Bildirim panelindeki satırı çizen gönderen bilgisi
+type RequestSender = {
+  id: number;
+  fullName: string;
+  username: string;
+  avatarUrl?: string;
+  equippedProfileFrame?: string;
+};
+
+// Arkadaşlık isteği (sunucudan) ya da okunmamış DM satırı (istemcide üretilir)
+type SocialRequest =
+  | { id: number; sender: RequestSender; reqType: 'friend' }
+  | { id: string; sender: RequestSender; reqType: 'unread_dm' };
+
+type QuickAction = {
+  id: string;
+  icon: string;
+  label: string;
+  color: string;
+  bg: string;
+  route: Href | null;
+};
+
+const QUICK_ACTIONS: QuickAction[] = [
+  { id: 'messages', icon: 'comment-dots', label: 'Mesajlar', color: T.quickAction.messagesFg, bg: T.quickAction.messagesBg, route: null },
+  { id: 'shop', icon: 'shopping-cart', label: 'Mağaza', color: T.quickAction.shopFg, bg: T.quickAction.shopBg, route: '/shop' },
+  { id: 'analytics', icon: 'chart-line', label: 'Analitik', color: T.quickAction.analyticsFg, bg: T.quickAction.analyticsBg, route: '/analytics' },
+  { id: 'leaderboard', icon: 'trophy', label: 'Liderlik', color: T.quickAction.leaderboardFg, bg: T.quickAction.leaderboardBg, route: '/leaderboard' },
 ];
 
 export default function MeScreen() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<SocialRequest[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Modals & Forms
@@ -88,17 +111,17 @@ export default function MeScreen() {
         setFriends(sorted);
       }
       
-      let allRequests: any[] = [];
+      let allRequests: SocialRequest[] = [];
       if (reqsRes.ok) {
         const data = await reqsRes.json();
         if (Array.isArray(data)) {
-          allRequests = data.map(req => ({ ...req, reqType: 'friend' }));
+          allRequests = data.map((req): SocialRequest => ({ ...req, reqType: 'friend' }));
         }
       }
       if (unreadRes.ok) {
         const data = await unreadRes.json();
         if (Array.isArray(data)) {
-          const unreadReqs = data.map((sender: any) => ({
+          const unreadReqs = data.map((sender: RequestSender): SocialRequest => ({
             id: `unread_${sender.id}`,
             sender,
             reqType: 'unread_dm',
@@ -108,7 +131,7 @@ export default function MeScreen() {
       }
       setRequests(allRequests);
     } catch (e) {
-      console.log('Me tab fetch error:', e);
+      logger.debug('Me tab fetch error:', e);
     } finally {
       setLoading(false);
       Animated.parallel([
@@ -116,7 +139,7 @@ export default function MeScreen() {
         Animated.spring(slideAnim, { toValue: 0, tension: 80, friction: 14, useNativeDriver: true }),
       ]).start();
     }
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   useFocusEffect(useCallback(() => {
     setLoading(true);
@@ -136,7 +159,7 @@ export default function MeScreen() {
       if (res.ok) {
         fetchData();
       }
-    } catch (e) {
+    } catch {
       Alert.alert('Hata', 'İşlem gerçekleştirilemedi.');
     }
   };
@@ -175,21 +198,21 @@ export default function MeScreen() {
       } else {
         Alert.alert('Hata', 'Kullanıcı şu an davet edilemiyor.');
       }
-    } catch (e) {
+    } catch {
       Alert.alert('Hata', 'Sunucu bağlantı hatası.');
     }
   };
 
-  const handleQuickAction = async (action: typeof QUICK_ACTIONS[0]) => {
+  const handleQuickAction = async (action: QuickAction) => {
     if (action.id === 'analytics' && user && !user.isPremium) {
-      router.push({ pathname: '/premium', params: { id: user.id } } as any);
+      router.push({ pathname: '/premium', params: { id: user.id } });
       return;
     }
     if (action.id === 'messages') {
       setDmModalVisible(true);
       return;
     }
-    if (action.route) router.push(action.route as any);
+    if (action.route) router.push(action.route);
   };
 
   if (loading) {
@@ -237,7 +260,7 @@ export default function MeScreen() {
                 </View>
               )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: user.id, openSettings: 'true' } } as any)}>
+            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: user.id, openSettings: 'true' } })}>
               <FontAwesome5 name="cog" size={20} color={T.textMuted} />
             </TouchableOpacity>
           </View>
@@ -246,10 +269,10 @@ export default function MeScreen() {
         {/* ── PROFİL KARTI ── */}
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => router.push({ pathname: '/profile', params: { id: user.id } } as any)}
+          onPress={() => router.push({ pathname: '/profile', params: { id: user.id } })}
         >
           <LinearGradient
-            colors={[T.primary, '#3949AB']}
+            colors={[T.primary, T.profileCard.gradientEnd]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={s.profileCard}
@@ -262,8 +285,8 @@ export default function MeScreen() {
                 frameId={user.equippedProfileFrame}
                 size={64}
                 colors={T}
-                backgroundColor="rgba(255,255,255,0.2)"
-                textColor="#FFF"
+                backgroundColor={T.profileCard.glass}
+                textColor={T.onColor}
                 textSize={26}
                 baseBorderWidth={3}
                 activeBorderWidth={4}
@@ -291,7 +314,7 @@ export default function MeScreen() {
             {/* Stat Badges */}
             <View style={s.statBadges}>
               <View style={s.statBadge}>
-                <FontAwesome5 name="fire-alt" size={12} color="#FF6B6B" solid />
+                <FontAwesome5 name="fire-alt" size={12} color={T.profileCard.streakFire} solid />
                 <Text style={s.statBadgeText}>{user.currentStreak ?? 0}</Text>
               </View>
               <View style={s.statBadge}>
@@ -317,7 +340,7 @@ export default function MeScreen() {
           todayMinutes={user.totalFocusMinutes ?? 0}
           streakDays={user.currentStreak ?? 1}
           coins={user.coins ?? 0}
-          onPressCoins={() => router.push('/shop' as any)}
+          onPressCoins={() => router.push('/shop')}
         />
 
         {/* ── HIZLI ERİŞİM IZGARASI ── */}
@@ -336,7 +359,7 @@ export default function MeScreen() {
                   <FontAwesome5
                     name={isLocked ? 'lock' : action.icon}
                     size={20}
-                    color="#FFF"
+                    color={T.onColor}
                     solid
                   />
                 </View>
@@ -377,7 +400,7 @@ export default function MeScreen() {
                     onDM={() => router.push({
                       pathname: '/dm',
                       params: { targetUserId: friend.id, targetName: friend.fullName, targetUsername: friend.username, targetAvatarUrl: friend.avatarUrl || '', targetProfileFrame: friend.equippedProfileFrame || 'none' }
-                    } as any)}
+                    })}
                     onNudge={handleNudge}
                   />
                 ))}
@@ -393,7 +416,7 @@ export default function MeScreen() {
                     onDM={() => router.push({
                       pathname: '/dm',
                       params: { targetUserId: friend.id, targetName: friend.fullName, targetUsername: friend.username, targetAvatarUrl: friend.avatarUrl || '', targetProfileFrame: friend.equippedProfileFrame || 'none' }
-                    } as any)}
+                    })}
                     onNudge={handleNudge}
                   />
                 ))}
@@ -407,7 +430,7 @@ export default function MeScreen() {
 
       {/* ── DM MODAL ── */}
       <Modal visible={dmModalVisible} animationType="slide" transparent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+        <View style={{ flex: 1, backgroundColor: T.overlay, justifyContent: 'flex-end' }}>
           <View style={s.dmSheet}>
             <View style={s.dmHandle} />
             <View style={s.dmHeader}>
@@ -434,7 +457,7 @@ export default function MeScreen() {
                       router.push({
                         pathname: '/dm',
                         params: { targetUserId: friend.id, targetName: friend.fullName, targetUsername: friend.username, targetAvatarUrl: friend.avatarUrl || '', targetProfileFrame: friend.equippedProfileFrame || 'none' }
-                      } as any);
+                      });
                     }}
                   >
                     <View style={s.friendAvatar}>
@@ -454,7 +477,7 @@ export default function MeScreen() {
                       <Text style={s.friendSub}>{friend.isOnline ? '🟢 Çevrimiçi' : `${friend.totalFocusMinutes} dk odak`}</Text>
                     </View>
                     <View style={[s.dmBtn, { backgroundColor: T.primary }]}>
-                      <FontAwesome5 name="paper-plane" size={13} color="#FFF" solid />
+                      <FontAwesome5 name="paper-plane" size={13} color={T.onColor} solid />
                     </View>
                   </TouchableOpacity>
                 ))
@@ -467,7 +490,7 @@ export default function MeScreen() {
 
       {/* ── ARKADAŞ EKLEME MODALI ── */}
       <Modal visible={isFriendModalVisible} animationType="fade" transparent statusBarTranslucent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 20 }}>
+        <View style={{ flex: 1, backgroundColor: T.overlay, justifyContent: 'center', padding: 20 }}>
           <View style={s.modalSheet}>
             <View style={{ alignItems: 'center', marginBottom: 15 }}>
               <View style={s.modalIconCircle}>
@@ -491,7 +514,7 @@ export default function MeScreen() {
 
       {/* ── GELEN İSTEKLER MODALI ── */}
       <Modal visible={isSocialModalVisible} animationType="slide" transparent statusBarTranslucent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+        <View style={{ flex: 1, backgroundColor: T.overlay, justifyContent: 'flex-end' }}>
           <View style={[s.dmSheet, { maxHeight: '85%' }]}>
             <View style={s.dmHandle} />
             <View style={s.dmHeader}>
@@ -536,15 +559,15 @@ export default function MeScreen() {
                           setDmModalVisible(true);
                         }}
                       >
-                        <FontAwesome5 solid name="envelope" size={14} color="#FFF" />
+                        <FontAwesome5 solid name="envelope" size={14} color={T.onColor} />
                       </TouchableOpacity>
                     ) : (
                       <View style={{ flexDirection: 'row', gap: 8 }}>
                         <TouchableOpacity style={[s.actionBtn, s.acceptBtn]} onPress={() => handleRespondRequest(req.id, 'accepted')}>
-                          <FontAwesome5 solid name="check" size={14} color="#059669" />
+                          <FontAwesome5 solid name="check" size={14} color={T.friendRequest.accept} />
                         </TouchableOpacity>
                         <TouchableOpacity style={[s.actionBtn, s.rejectBtn]} onPress={() => handleRespondRequest(req.id, 'rejected')}>
-                          <FontAwesome5 solid name="times" size={14} color="#DC2626" />
+                          <FontAwesome5 solid name="times" size={14} color={T.friendRequest.reject} />
                         </TouchableOpacity>
                       </View>
                     )}
@@ -616,23 +639,23 @@ const s = StyleSheet.create({
     backgroundColor: T.surface, alignItems: 'center', justifyContent: 'center',
   },
   profileInfo: { paddingRight: 80 },
-  profileName: { color: '#FFF', fontSize: 22, fontWeight: '900', marginBottom: 2 },
-  profileUsername: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600', marginBottom: 8 },
+  profileName: { color: T.onColor, fontSize: 22, fontWeight: '900', marginBottom: 2 },
+  profileUsername: { color: T.profileCard.textMuted, fontSize: 14, fontWeight: '600', marginBottom: 8 },
   rankRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rankText: { fontSize: 13, fontWeight: '800' },
 
   statBadges: { flexDirection: 'row', gap: 10, marginTop: 14, marginBottom: 14 },
   statBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: T.profileCard.glassSoft,
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
   },
-  statBadgeText: { color: '#FFF', fontSize: 14, fontWeight: '900' },
+  statBadgeText: { color: T.onColor, fontSize: 14, fontWeight: '900' },
 
   progressSection: { gap: 6 },
-  progressTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' },
+  progressTrack: { height: 6, backgroundColor: T.profileCard.glass, borderRadius: 3, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: T.accent, borderRadius: 3 },
-  progressLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '700' },
+  progressLabel: { color: T.profileCard.textSoft, fontSize: 11, fontWeight: '700' },
 
   // Hızlı Erişim
   sectionTitle: { color: T.textDark, fontSize: 18, fontWeight: '900', marginBottom: 14 },
@@ -647,7 +670,7 @@ const s = StyleSheet.create({
     position: 'absolute', top: 10, right: 10,
     backgroundColor: T.accent, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2,
   },
-  proBadgeText: { color: '#FFF', fontSize: 9, fontWeight: '900' },
+  proBadgeText: { color: T.onColor, fontSize: 9, fontWeight: '900' },
 
   // Arkadaşlar
   friendsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
@@ -691,7 +714,7 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: T.border,
   },
   badge: { position: 'absolute', top: -4, right: -6, backgroundColor: T.danger, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: T.background },
-  badgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: 'bold' },
+  badgeText: { color: T.onColor, fontSize: 9, fontWeight: 'bold' },
 
   modalSheet: { backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 28, padding: 25, gap: 15, ...Theme.shadows.medium },
   modalIconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: T.lightAmber, alignItems: 'center', justifyContent: 'center', marginBottom: 5, borderWidth: 1, borderColor: T.accent },
@@ -702,7 +725,7 @@ const s = StyleSheet.create({
   modalCancelBtn: { flex: 1, height: 56, borderRadius: 18, backgroundColor: T.softIndigo, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center' },
   modalCancelText: { fontSize: 15, fontWeight: 'bold', color: T.textDark },
   modalCreateBtn: { height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  modalCreateText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
+  modalCreateText: { fontSize: 15, fontWeight: '900', color: T.onColor, letterSpacing: 1 },
 
   actionBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   acceptBtn: { backgroundColor: T.softSuccess, borderWidth: 1, borderColor: T.success },

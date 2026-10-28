@@ -1,0 +1,14 @@
+# Depoda tüm metin dosyaları LF ile saklanır (Windows/macOS/Linux arasında tutarlılık).
+* text=auto eol=lf
+
+# İkili dosyalar
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.mp3 binary
+*.wav binary
+*.ttf binary
+*.otf binary

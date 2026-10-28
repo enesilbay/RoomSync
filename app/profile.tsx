@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -13,12 +12,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { apiUrl, assetUrl, getAuthHeaders } from './config/api';
-import { AppScreen, DarkSheetModal, IconButton, PageHeader, SoftCard } from './components/common';
-import { FramedAvatar } from './components/FramedAvatar';
-import { C } from './(tabs)/sensor';
-import { getRankInfo, getRankProgress } from './utils/rank';
-import { Theme } from './utils/theme';
+import { apiUrl, assetUrl, getAuthHeaders } from '@/src/lib/api';
+import { AppScreen, DarkSheetModal, IconButton, PageHeader, SoftCard } from '@/src/components/common';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { appendFile } from '@/src/lib/upload';
+import { C, Theme } from '@/src/theme';
+import { getRankInfo, getRankProgress } from '@/src/lib/rank';
+import { logger } from '@/src/lib/logger';
 
 const T = C;
 
@@ -85,7 +85,7 @@ export default function ProfileScreen() {
         setSettingsVisible(true);
         router.setParams({ openSettings: undefined }); // Prevent reopening on subsequent focuses
       }
-    }, [fetchUserData, params.openSettings]),
+    }, [fetchUserData, params.openSettings, router]),
   );
 
   const handleLogout = () => {
@@ -99,7 +99,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.multiRemove(['user_data', 'access_token']);
-            router.replace('/' as any);
+            router.replace('/');
           },
         },
       ]
@@ -131,7 +131,7 @@ export default function ProfileScreen() {
       const formData = new FormData();
       const fileUri = imageAsset.uri;
       const fileName = imageAsset.fileName || fileUri.split('/').pop() || 'avatar.jpg';
-      formData.append('file', { uri: fileUri, name: fileName, type: imageAsset.mimeType || 'image/jpeg' } as any);
+      appendFile(formData, 'file', { uri: fileUri, name: fileName, type: imageAsset.mimeType || 'image/jpeg' });
 
       const token = await AsyncStorage.getItem('access_token');
       const res = await fetch(apiUrl(`/users/avatar/${myUserId}`), {
@@ -142,16 +142,16 @@ export default function ProfileScreen() {
       
       const resText = await res.text();
       if (!res.ok) {
-        console.log('Upload error response:', resText);
+        logger.debug('Upload error response:', resText);
         throw new Error(`Avatar yuklenemedi: ${resText.substring(0, 100)}`);
       }
 
       const data = JSON.parse(resText);
       setUser(data.user);
       await AsyncStorage.setItem('user_data', JSON.stringify(data.user));
-    } catch (err: any) {
-      console.error(err);
-      Alert.alert('Hata', err.message || 'Avatar yuklenemedi.');
+    } catch (err: unknown) {
+      logger.error(err);
+      Alert.alert('Hata', (err instanceof Error && err.message) || 'Avatar yuklenemedi.');
     } finally {
       setIsUploading(false);
     }
@@ -264,7 +264,7 @@ export default function ProfileScreen() {
             imageStyle={styles.avatarImage}
           >
             <View style={styles.cameraBadge}>
-              {isUploading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <FontAwesome5 solid name="camera" size={13} color="#FFFFFF" />}
+              {isUploading ? <ActivityIndicator size="small" color={T.onColor} /> : <FontAwesome5 solid name="camera" size={13} color={T.onColor} />}
             </View>
           </FramedAvatar>
         </TouchableOpacity>
@@ -336,11 +336,11 @@ export default function ProfileScreen() {
         </View>
       </SoftCard>
 
-      <TouchableOpacity onPress={() => router.push('/shop' as any)} activeOpacity={0.86}>
+      <TouchableOpacity onPress={() => router.push('/shop')} activeOpacity={0.86}>
         <SoftCard style={[styles.analyticsButton, { backgroundColor: T.primary, marginBottom: 16 }]}>
-          <FontAwesome5 solid name="shopping-cart" size={16} color="#FFF" />
-          <Text style={[styles.analyticsText, { color: '#FFF' }]}>Magazaya Git (Shop)</Text>
-          <FontAwesome5 solid name="chevron-right" size={12} color="#FFF" />
+          <FontAwesome5 solid name="shopping-cart" size={16} color={T.onColor} />
+          <Text style={[styles.analyticsText, { color: T.onColor }]}>Magazaya Git (Shop)</Text>
+          <FontAwesome5 solid name="chevron-right" size={12} color={T.onColor} />
         </SoftCard>
       </TouchableOpacity>
 
@@ -348,9 +348,9 @@ export default function ProfileScreen() {
         activeOpacity={0.86}
         onPress={() => {
           if (user.isPremium) {
-            router.push('/analytics' as any);
+            router.push('/analytics');
           } else {
-            router.push({ pathname: '/premium', params: { id: myUserId } } as any);
+            router.push({ pathname: '/premium', params: { id: myUserId } });
           }
         }}
       >
@@ -434,7 +434,7 @@ export default function ProfileScreen() {
           <TouchableOpacity
             onPress={() => {
               setSettingsVisible(false);
-              router.push({ pathname: '/premium', params: { id: myUserId } } as any);
+              router.push({ pathname: '/premium', params: { id: myUserId } });
             }}
             style={styles.premiumAction}
           >
@@ -454,11 +454,11 @@ export default function ProfileScreen() {
             <Text style={styles.secondaryBtnText}>Iptal</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={saveProfile} disabled={isSaving} style={styles.primaryBtn}>
-            {isSaving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryBtnText}>Kaydet</Text>}
+            {isSaving ? <ActivityIndicator color={T.onColor} /> : <Text style={styles.primaryBtnText}>Kaydet</Text>}
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-          <FontAwesome5 solid name="sign-out-alt" size={15} color="#E53935" />
+          <FontAwesome5 solid name="sign-out-alt" size={15} color={T.logout.foreground} />
           <Text style={styles.logoutBtnText}>Cikis Yap</Text>
         </TouchableOpacity>
       </DarkSheetModal>
@@ -518,7 +518,6 @@ const styles = StyleSheet.create({
   infoTip: { flexDirection: 'row', gap: 9, alignItems: 'flex-start', backgroundColor: T.softInfo, borderRadius: 14, borderWidth: 1, borderColor: T.border, padding: 12, marginBottom: 16 },
   infoTipText: { flex: 1, color: T.textDark, fontSize: 12, fontWeight: '700', lineHeight: 17 },
   sheetTitle: { color: T.textDark, fontSize: 20, fontWeight: '900', marginBottom: 10 },
-  sheetText: { color: T.textMuted, fontSize: 14, fontWeight: '600', lineHeight: 21, marginBottom: 18 },
   inputLabel: { color: T.textDark, fontSize: 12, fontWeight: '900', marginBottom: 7, marginLeft: 2 },
   inputWrap: { backgroundColor: T.softIndigo, borderRadius: 14, borderWidth: 1, borderColor: T.border, paddingHorizontal: 14, marginBottom: 16 },
   input: { height: 52, color: T.textDark, fontSize: 16, fontWeight: '600' },
@@ -529,9 +528,9 @@ const styles = StyleSheet.create({
   premiumActionText: { color: T.accent, fontSize: 12, fontWeight: '900' },
   sheetActions: { flexDirection: 'row', gap: 10 },
   primaryBtn: { flex: 1, backgroundColor: T.primary, borderRadius: 14, alignItems: 'center', justifyContent: 'center', minHeight: 48, paddingHorizontal: 16 },
-  primaryBtnText: { color: '#FFFFFF', fontWeight: '900' },
+  primaryBtnText: { color: T.onColor, fontWeight: '900' },
   secondaryBtn: { flex: 1, backgroundColor: T.softIndigo, borderRadius: 14, alignItems: 'center', justifyContent: 'center', minHeight: 48, borderWidth: 1, borderColor: T.border },
   secondaryBtnText: { color: T.textDark, fontWeight: '900' },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 1, borderColor: '#FFCDD2', backgroundColor: '#FFF5F5' },
-  logoutBtnText: { color: '#E53935', fontWeight: '900', fontSize: 15 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, paddingVertical: 14, borderRadius: 14, borderWidth: 1, borderColor: T.logout.border, backgroundColor: T.logout.background },
+  logoutBtnText: { color: T.logout.foreground, fontWeight: '900', fontSize: 15 },
 });

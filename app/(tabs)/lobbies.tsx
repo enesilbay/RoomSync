@@ -9,13 +9,15 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { apiUrl, assetUrl } from '../config/api';
-import { FramedAvatar } from '../components/FramedAvatar';
-import { C } from './sensor';
-import { Theme } from '../utils/theme';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C, Theme } from '@/src/theme';
+import { logger } from '@/src/lib/logger';
 
 const T = C;
 const { width, height } = Dimensions.get('window');
+
+const getToken = async () => await AsyncStorage.getItem('access_token');
 
 interface Lobby {
   id: string;
@@ -31,6 +33,13 @@ interface Lobby {
   activeUsers?: number;
 }
 
+// Kartta "arkadaşın burada" bilgisi için kullanılan alanlar
+interface LobbyFriend {
+  fullName: string;
+  isOnline?: boolean;
+  currentRoom?: string;
+}
+
 // ── DEKORATIF ARKAPLAN NOKTALARI ──
 function BackgroundOrbs() {
   return (
@@ -43,17 +52,20 @@ function BackgroundOrbs() {
 }
 
 // ── Lobi Kartı (Beyaz & Soft Gölgeli) ──
-function LobbyCard({ item, onPress, index, friends }: { item: Lobby; onPress: () => void; index: number; friends: any[] }) {
+function LobbyCard({ item, onPress, index, friends }: { item: Lobby; onPress: () => void; index: number; friends: LobbyFriend[] }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  // Giriş animasyonu yalnızca mount'ta, kartın ilk sırasına göre gecikmeli oynar;
+  // filtre/arama sırayı değiştirdiğinde yeniden oynamasın diye ilk değer sabitlenir.
+  const enterDelay = useRef(index * 80).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 400, delay: index * 80, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 12, delay: index * 80, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 400, delay: enterDelay, useNativeDriver: true }),
+      Animated.spring(slideAnim, { toValue: 0, tension: 60, friction: 12, delay: enterDelay, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim, enterDelay]);
 
   const pressIn = () => Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, tension: 150 }).start();
   const pressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 150 }).start();
@@ -62,7 +74,7 @@ function LobbyCard({ item, onPress, index, friends }: { item: Lobby; onPress: ()
   const focusedCount = item.activeUsers || 0;
   const isActive = item.isActive !== false;
 
-  const friendsInLobby = friends?.filter((f: any) => f.currentRoom === item.name && f.isOnline) || [];
+  const friendsInLobby = friends?.filter((f) => f.currentRoom === item.name && f.isOnline) || [];
   let metaText = `${memberCount} kişi odada · ${focusedCount} odaklanıyor`;
   if (friendsInLobby.length > 0) {
     const firstName = friendsInLobby[0].fullName.split(' ')[0];
@@ -148,19 +160,11 @@ export default function LobbiesScreen() {
 
   useEffect(() => {
     Animated.timing(headerAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
-  }, []);
+  }, [headerAnim]);
 
-  const [friends, setFriends] = useState<any[]>([]);
+  const [friends, setFriends] = useState<LobbyFriend[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchLobbies();
-      fetchFriends();
-      loadUserData();
-    }, [myUserId])
-  );
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem('user_data');
       if (stored) {
@@ -172,13 +176,11 @@ export default function LobbiesScreen() {
         }
       }
     } catch (e) {
-      console.error('Kullanıcı verisi çekilemedi', e);
+      logger.error('Kullanıcı verisi çekilemedi', e);
     }
-  };
+  }, []);
 
-  const getToken = async () => await AsyncStorage.getItem('access_token');
-
-  const fetchFriends = async () => {
+  const fetchFriends = useCallback(async () => {
     try {
       const token = await getToken();
       const res = await fetch(apiUrl('/users/friends/0'), {
@@ -188,10 +190,10 @@ export default function LobbiesScreen() {
         const data = await res.json();
         setFriends(Array.isArray(data) ? data : []);
       }
-    } catch (e) {}
-  };
+    } catch {}
+  }, []);
 
-  const fetchLobbies = async () => {
+  const fetchLobbies = useCallback(async () => {
     try {
       const token = await getToken();
       const response = await fetch(apiUrl('/lobbies'), {
@@ -205,9 +207,18 @@ export default function LobbiesScreen() {
       const data = await response.json();
       setLobbies(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.warn('[lobbies] Lobi listesi yüklenemedi:', e);
+      logger.warn('[lobbies] Lobi listesi yüklenemedi:', e);
     }
-  };
+  }, [router]);
+
+  // Sekmeye her odaklanıldığında verileri tazele
+  useFocusEffect(
+    useCallback(() => {
+      fetchLobbies();
+      fetchFriends();
+      loadUserData();
+    }, [fetchLobbies, fetchFriends, loadUserData])
+  );
 
 
   const handleCreateLobby = async () => {
@@ -258,24 +269,16 @@ export default function LobbiesScreen() {
       if (res.ok) {
         setIsPasswordModalVisible(false);
         setEnterPassword('');
-        router.push({ pathname: '/sensor' as any, params: { ...params, roomName: selectedLobby.name, maxUsers: selectedLobby.maxUsers || 50, isElite: selectedLobby.isPremiumOnly ? 'true' : 'false' } });
+        router.push({ pathname: '/sensor', params: { ...params, roomName: selectedLobby.name, maxUsers: selectedLobby.maxUsers || 50, isElite: selectedLobby.isPremiumOnly ? 'true' : 'false' } });
       } else {
         Alert.alert('Hata', 'Şifre hatalı!');
       }
     } catch (e) {
-      console.error('Verify password error:', e);
+      logger.error('Verify password error:', e);
       Alert.alert('Hata', 'Sunucu bağlantı hatası.');
     } finally {
       setIsVerifying(false);
     }
-  };
-
-
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('user_data');
-      router.replace('/');
-    } catch (e) { console.error('Çıkış hatası:', e); }
   };
 
   const filteredLobbies = lobbies.filter((l) => {
@@ -305,7 +308,7 @@ export default function LobbiesScreen() {
                 <Text style={s.pageTitle}>{userName}</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: myUserId } } as any)} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => router.push({ pathname: '/profile', params: { id: myUserId } })} activeOpacity={0.7}>
               <FramedAvatar
                 uri={avatarUrl}
                 name={userName}
@@ -386,7 +389,7 @@ export default function LobbiesScreen() {
                     'Bu oda sadece Premium kullanıcılar içindir.',
                     [
                       { text: 'İptal', style: 'cancel' },
-                      { text: 'Premium Ol', onPress: () => router.push({ pathname: '/premium', params: { id: myUserId } } as any) }
+                      { text: 'Premium Ol', onPress: () => router.push({ pathname: '/premium', params: { id: myUserId } }) }
                     ]
                   );
                   return;
@@ -396,7 +399,7 @@ export default function LobbiesScreen() {
                   setSelectedLobby(item);
                   setIsPasswordModalVisible(true);
                 } else {
-                  router.push({ pathname: '/sensor' as any, params: { ...params, roomName: item.name, isElite: item.isPremiumOnly ? 'true' : 'false' } });
+                  router.push({ pathname: '/sensor', params: { ...params, roomName: item.name, isElite: item.isPremiumOnly ? 'true' : 'false' } });
                 }
               }} 
             />
@@ -418,12 +421,12 @@ export default function LobbiesScreen() {
         style={s.fab} 
         onPress={() => {
           if (isPremium) setIsModalVisible(true);
-          else router.push({ pathname: '/premium', params: { id: myUserId } } as any);
+          else router.push({ pathname: '/premium', params: { id: myUserId } });
         }} 
         activeOpacity={0.85}
       >
         <LinearGradient colors={[T.primary, T.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.fabGrad}>
-          <FontAwesome5 solid name={isPremium ? "plus" : "lock"} size={14} color="#FFFFFF" />
+          <FontAwesome5 solid name={isPremium ? "plus" : "lock"} size={14} color={T.onColor} />
           <Text style={s.fabText}>ODA KUR</Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -460,7 +463,7 @@ export default function LobbiesScreen() {
                 <Text style={{ color: T.textDark, fontSize: 15, fontWeight: 'bold' }}>Gizli Oda (Kilitli)</Text>
                 <Switch
                   trackColor={{ false: T.border, true: T.primary }}
-                  thumbColor={isPrivate ? T.textDark : '#94A3B8'}
+                  thumbColor={isPrivate ? T.textDark : T.switchThumbOff}
                   onValueChange={setIsPrivate}
                   value={isPrivate}
                 />
@@ -471,7 +474,7 @@ export default function LobbiesScreen() {
                   <Text style={{ color: T.accent, fontSize: 15, fontWeight: 'bold' }}>Elite Oda</Text>
                   <Switch
                     trackColor={{ false: T.border, true: T.primary }}
-                    thumbColor={isPremiumOnly ? T.textDark : '#94A3B8'}
+                    thumbColor={isPremiumOnly ? T.textDark : T.switchThumbOff}
                     onValueChange={setIsPremiumOnly}
                     value={isPremiumOnly}
                   />
@@ -535,7 +538,7 @@ export default function LobbiesScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleVerifyPassword} disabled={isVerifying} style={{ flex: 1 }}>
                   <LinearGradient colors={[T.primary, T.secondary]} style={mdl.createBtn}>
-                    {isVerifying ? <ActivityIndicator color="#FFFFFF" /> : <Text style={mdl.createText}>Giriş Yap</Text>}
+                    {isVerifying ? <ActivityIndicator color={T.onColor} /> : <Text style={mdl.createText}>Giriş Yap</Text>}
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -563,7 +566,7 @@ const s = StyleSheet.create({
   catChipActive: { backgroundColor: T.primary, borderColor: T.primary },
   catChipInactive: { backgroundColor: T.surface, borderColor: T.border },
   catText: { fontSize: 13, fontWeight: 'bold' },
-  catTextActive: { color: '#FFF' },
+  catTextActive: { color: T.onColor },
   catTextInactive: { color: T.textMuted },
   
   summaryCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderRadius: 20, paddingVertical: 16, marginBottom: 16, borderWidth: 1, borderColor: T.border, ...Theme.shadows.soft },
@@ -585,30 +588,25 @@ const s = StyleSheet.create({
   
   fab: { position: 'absolute', bottom: 110, right: 22, borderRadius: 18, overflow: 'hidden', elevation: 12, shadowColor: T.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.22, shadowRadius: 15 },
   fabGrad: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 22, paddingVertical: 16 },
-  fabText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1.2 },
+  fabText: { fontSize: 15, fontWeight: '900', color: T.onColor, letterSpacing: 1.2 },
 });
 
 const hdr = StyleSheet.create({
-  iconBtn: { width: 42, height: 42, borderRadius: 14, backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center', ...Theme.shadows.soft },
-  iconBtnDanger: { borderColor: T.softDanger, backgroundColor: '#FFFFFF' },
-  badge: { position: 'absolute', top: -4, right: -4, backgroundColor: T.danger, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: T.background },
-  badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: 'bold' },
   profileAvatar: { ...Theme.shadows.soft },
   profileAvatarText: { fontFamily: 'Montserrat_800ExtraBold', fontSize: 18, color: T.primary },
-  logoutWrap: { width: 42, height: 42, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
 });
 
 const card = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderRadius: 20, padding: 16, gap: 16, borderWidth: 1, borderColor: T.border, ...Theme.shadows.soft },
-  eliteWrap: { borderColor: '#F3D57A', backgroundColor: '#FFFCF2' },
+  eliteWrap: { borderColor: T.elite.border, backgroundColor: T.elite.background },
   iconBox: { width: 54, height: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: T.border, backgroundColor: T.softIndigo },
-  eliteIconBox: { backgroundColor: T.lightAmber, borderColor: '#F3D57A' },
+  eliteIconBox: { backgroundColor: T.lightAmber, borderColor: T.elite.border },
   body: { flex: 1 },
   name: { fontSize: 17, fontWeight: '800', color: T.textDark, marginBottom: 4 },
   desc: { fontSize: 13, color: T.textMuted, marginBottom: 10 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   metaPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: T.background, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, borderWidth: 1, borderColor: T.border },
-  elitePill: { backgroundColor: T.lightAmber, borderColor: '#F3D57A' },
+  elitePill: { backgroundColor: T.lightAmber, borderColor: T.elite.border },
   eliteMetaText: { color: T.primary },
   dot: { width: 8, height: 8, borderRadius: 4 },
   metaText: { fontSize: 12, color: T.textMuted, fontWeight: '700' },
@@ -616,7 +614,7 @@ const card = StyleSheet.create({
 });
 
 const mdl = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'flex-end' },
+  overlay: { flex: 1, backgroundColor: T.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 25, paddingBottom: Platform.OS === 'ios' ? 40 : 25, gap: 15, ...Theme.shadows.medium },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: T.border, alignSelf: 'center', marginBottom: 10 },
   iconCircle: { width: 64, height: 64, borderRadius: 32, backgroundColor: T.lightAmber, alignItems: 'center', justifyContent: 'center', marginBottom: 5, borderWidth: 1, borderColor: T.accent },
@@ -627,32 +625,11 @@ const mdl = StyleSheet.create({
   cancelBtn: { flex: 1, height: 56, borderRadius: 18, backgroundColor: T.softIndigo, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center' },
   cancelText: { fontSize: 15, fontWeight: 'bold', color: T.textDark },
   createBtn: { height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  createText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
-  closeBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: T.softIndigo, alignItems: 'center', justifyContent: 'center' },
-});
-
-const flist = StyleSheet.create({
-  sectionTitle: { fontSize: 13, fontWeight: '800', color: T.textMuted, letterSpacing: 1, marginBottom: 12 },
-  itemWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.background, padding: 14, borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: T.border },
-  avatar: { width: 46, height: 46, borderRadius: 23, backgroundColor: T.softIndigo, borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  avatarText: { fontSize: 18, fontWeight: '800', color: T.primary },
-  info: { flex: 1 },
-  name: { fontSize: 15, fontWeight: 'bold', color: T.textDark, marginBottom: 3 },
-  username: { fontSize: 13, color: T.textMuted },
-  scoreTitle: { fontSize: 10, color: T.textMuted, fontWeight: '600', marginBottom: 2 },
-  score: { fontSize: 14, color: T.accent, fontWeight: 'bold' },
-  actions: { flexDirection: 'row', gap: 8 },
-  actionBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  acceptBtn: { backgroundColor: T.softSuccess, borderWidth: 1, borderColor: T.success },
-  rejectBtn: { backgroundColor: T.softDanger, borderWidth: 1, borderColor: T.danger },
-  emptyWrap: { alignItems: 'center', paddingVertical: 40, gap: 10, backgroundColor: T.background, borderRadius: 20, borderWidth: 1, borderColor: T.border },
-  emptyText: { fontSize: 14, color: T.textMuted, fontWeight: '500' }
+  createText: { fontSize: 15, fontWeight: '900', color: T.onColor, letterSpacing: 1 },
 });
 
 const bg = StyleSheet.create({
   orb1: { position: 'absolute', top: -height * 0.08, right: -width * 0.22, width: width * 0.75, height: width * 0.75, borderRadius: width * 0.375, backgroundColor: T.softIndigo, opacity: 0.75 },
   orb2: { position: 'absolute', bottom: -height * 0.06, left: -width * 0.28, width: width * 0.8, height: width * 0.8, borderRadius: width * 0.4, backgroundColor: T.lightAmber, opacity: 0.58 },
   orb3: { position: 'absolute', top: height * 0.37, right: width * 0.08, width: width * 0.32, height: width * 0.32, borderRadius: width * 0.16, backgroundColor: T.softInfo, opacity: 0.45 },
-  gridLine1: { position: 'absolute', top: 0, left: width * 0.33, width: 1, height: height, backgroundColor: 'rgba(255,255,255,0.02)' },
-  gridLine2: { position: 'absolute', top: 0, left: width * 0.66, width: 1, height: height, backgroundColor: 'rgba(255,255,255,0.02)' },
 });
