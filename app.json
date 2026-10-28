@@ -1,66 +1,64 @@
 {
-    "expo":  {
-                 "name":  "RoomSync",
-                 "slug":  "roomsync",
-                 "version":  "1.0.0",
-                 "orientation":  "portrait",
-                 "icon":  "./assets/images/icon.png",
-                 "scheme":  "roomsync",
-                 "userInterfaceStyle":  "automatic",
-                 "newArchEnabled":  true,
-                 "ios":  {
-                             "supportsTablet":  true
-                         },
-                 "android":  {
-                                 "adaptiveIcon":  {
-                                                      "backgroundColor":  "#1A237E",
-                                                      "foregroundImage":  "./assets/images/android-icon-foreground.png",
-                                                      "monochromeImage":  "./assets/images/android-icon-monochrome.png"
-                                                  },
-                                 "edgeToEdgeEnabled":  true,
-                                 "softwareKeyboardLayoutMode":  "resize",
-                                 "predictiveBackGestureEnabled":  false,
-                                 "permissions":  [
-                                                     "android.permission.RECORD_AUDIO"
-                                                 ],
-                                 "package":  "com.enesilbay.roomsync"
-                             },
-                 "web":  {
-                             "output":  "static",
-                             "favicon":  "./assets/images/favicon.png"
-                         },
-                 "plugins":  [
-                                 "expo-router",
-                                 [
-                                     "expo-splash-screen",
-                                     {
-                                         "image":  "./assets/images/splash-icon.png",
-                                         "imageWidth":  200,
-                                         "resizeMode":  "contain",
-                                         "backgroundColor":  "#1A237E",
-                                         "dark":  {
-                                                      "backgroundColor":  "#1A237E"
-                                                  }
-                                     }
-                                 ],
-                                 "expo-web-browser",
-                                 [
-                                     "expo-image-picker",
-                                     {
-                                         "photosPermission":  "The app accesses your photos to let you set a profile picture."
-                                     }
-                                 ],
-                                 "expo-font"
-                             ],
-                 "experiments":  {
-                                     "typedRoutes":  true,
-                                     "reactCompiler":  true
-                                 },
-                 "extra":  {
-                               "router":  {
-
-                                          }
-                           },
-                 "owner":  "enesilbay"
-             }
+  "expo": {
+    "name": "RoomSync",
+    "slug": "roomsync",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "roomsync",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1A237E",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.enesilbay.roomsync"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#1A237E",
+          "dark": {
+            "backgroundColor": "#1A237E"
+          }
+        }
+      ],
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you set a profile picture."
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {}
+    },
+    "owner": "enesilbay"
+  }
 }
