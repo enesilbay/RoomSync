@@ -26,6 +26,10 @@ Telefon ve bilgisayar aynı ağda olmalı; `192.168.x.x` yerine bilgisayarının
 | `npm run typecheck` | TypeScript tip kontrolü |
 | `npm run lint` | ESLint |
 
+## Yol haritası
+
+Fazlara bölünmüş, yapılış sırasına göre dizilmiş plan: [ROADMAP.md](ROADMAP.md)
+
 ## Yeni proje olarak ilk yapılacaklar
 
 - [ ] `eas init` ile yeni Expo/EAS projesi oluştur (`app.json` içindeki `extra.eas.projectId` bilerek kaldırıldı)
