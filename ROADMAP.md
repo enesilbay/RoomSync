@@ -28,40 +28,50 @@ Neden önce: sonraki her iş bu yapının üzerine kurulacak. Dosya taşımalar�
 
 ### Yapı
 
-- [ ] 🟠 `app/components`, `app/config`, `app/utils` klasörlerini `src/components`, `src/lib`, `src/theme` altına taşı. `export default Dummy` geçici çözümlerini sil; `app/` altında yalnızca rota dosyaları kalsın.
-- [ ] ⚪ Tema renk sabiti `C`'yi `app/(tabs)/sensor.tsx:27`'den çıkar. Tüm ekranlar renkleri `src/theme`'den alsın (şu an her ekran 1200 satırlık sensör modülünü yüklüyor).
-- [ ] `sensor.tsx`'i (1207 satır) `src/features/focus/` altında parçalara böl: detector, timer, sounds, room socket, chat drawer, mixer, modallar.
+- [x] 🟠 `app/components`, `app/config`, `app/utils` klasörlerini `src/components`, `src/lib`, `src/theme` altına taşı. `export default Dummy` geçici çözümlerini sil; `app/` altında yalnızca rota dosyaları kalsın.
+- [x] ⚪ Tema renk sabiti `C`'yi `app/(tabs)/sensor.tsx:27`'den çıkar. Tüm ekranlar renkleri `src/theme`'den alsın (şu an her ekran 1200 satırlık sensör modülünü yüklüyor).
+- [x] `sensor.tsx`'i (1207 satır) `src/features/focus/` altında parçalara böl: detector, timer, sounds, room socket, chat drawer, mixer, modallar.
 
 ### Temizlik
 
-- [ ] Expo şablon kalıntılarını sil:
+- [x] Expo şablon kalıntılarını sil:
   - `components/` (8 dosya), `constants/theme.ts`, `hooks/use-theme-color.ts`
   - `scripts/reset-project.js` ve `reset-project` npm script'i
   - `app/modal.tsx` ve kök layout'taki `Stack.Screen name="modal"`
   - `react-logo*.png`, `partial-react-logo.png`, `android-icon-background.png`, `logo-dark.png`, `logo-light.png`
-- [ ] Kullanılmayan paketleri kaldır: `expo-blur`, `expo-symbols`, `@react-navigation/material-top-tabs`, `react-native-pager-view`. `expo-image` kullanılacaksa kalsın, kullanılmayacaksa kaldır. `expo-haptics` kalsın (Faz 4'te kullanılacak).
-- [ ] Ölü kodu temizle:
+- [x] Kullanılmayan paketleri kaldır: `expo-blur`, `expo-symbols`, `@react-navigation/material-top-tabs`, `react-native-pager-view`. `expo-image` kullanılacaksa kalsın, kullanılmayacaksa kaldır. `expo-haptics` kalsın (Faz 4'te kullanılacak).
+- [x] Ölü kodu temizle:
   - `pomAnim` (`sensor.tsx:161`)
   - `handleLogout` (`lobbies.tsx:274`)
   - `setCardNumber` (`premium.tsx:26`)
   - Kullanılmayan stiller
-- [ ] `npx expo install expo expo-constants` (expo-doctor sürüm uyarıları).
-- [ ] `package-lock.json` içindeki ad değişikliğini (`mobile` → `roomsync-mobile`) commit et.
-- [ ] `app.json`'u 2 boşluk girintiyle yeniden biçimlendir. Sürümü `0.2.0` yap.
+- [x] `npx expo install expo expo-constants` (expo-doctor sürüm uyarıları).
+- [x] `package-lock.json` içindeki ad değişikliğini (`mobile` → `roomsync-mobile`) commit et.
+- [x] `app.json`'u 2 boşluk girintiyle yeniden biçimlendir. Sürümü `0.2.0` yap.
 
 ### Kalite araçları
 
-- [ ] ESLint ayarları:
+- [x] ESLint ayarları:
   - `react-hooks/exhaustive-deps` kuralını aç.
   - Kullanılmayan değişken istisnalarını kaldır.
   - `src/theme` dışında ham hex renk değerini yasakla.
-- [ ] Typed routes: `.expo/types`'ı üret ve tüm `router.push(... as any)` cast'lerini kaldır.
-- [ ] `jest-expo` ve `@testing-library/react-native` kur.
-- [ ] GitHub Actions: typecheck, lint, test, `expo-doctor`, `npm audit`.
-- [ ] `__DEV__` ile koşullanan bir logger yaz; production'da `console.log` çıkmasın.
-- [ ] `app/_layout.tsx`'ten `ErrorBoundary` export et.
+- [x] Typed routes: `.expo/types`'ı üret ve tüm `router.push(... as any)` cast'lerini kaldır.
+- [x] `jest-expo` ve `@testing-library/react-native` kur.
+- [x] GitHub Actions: typecheck, lint, test, `expo-doctor`, `npm audit`.
+- [x] `__DEV__` ile koşullanan bir logger yaz; production'da `console.log` çıkmasın.
+- [x] `app/_layout.tsx`'ten `ErrorBoundary` export et.
 
 **Bitti tanımı:** `app/` altında yalnızca rotalar var, lint kuralları açık ve 0 uyarı veriyor, CI yeşil.
+
+> ✅ **Faz 0 tamamlandı (2026-10-28).** `npm run typecheck`, `npm run lint:strict` (0 uyarı), `npm test` (68 test), `expo-doctor` (18/18) ve Android/iOS bundle export'u yeşil.
+>
+> Plan dışında ek olarak yapılanlar:
+> - `npm run typegen`: typed routes tipleri dev server açmadan üretilir (CI'da da çalışır).
+> - Ortak yardımcılar: `src/lib/routeParams.ts` (`toRouteParams`) ve `src/lib/upload.ts` (`appendFile`).
+> - Oda socket'i güncel `userId`/isim değerlerini `latestRef` üzerinden okur (eskimiş değer okuma hatası giderildi; tek soket işi Faz 2'de).
+> - Bildirim işleyicisinde kullanımdan kalkan `shouldShowAlert` kaldırıldı (davranış aynı).
+> - ESLint global `ignores` düzeltmesi; `npx eslint .` artık `.js` dosyalarında da çalışıyor.
+> - `expo-asset` açıkça kuruldu; `.gitattributes` (LF) ve `.editorconfig` eklendi; Dependabot yapılandırıldı.
 
 ---
 
@@ -179,6 +189,7 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
 - [ ] 🟡 Analitik:
   - Tarihler yerel saat diliminde hesaplansın (`analytics.tsx:64`).
   - Tüm metrikler aynı dönemi kapsasın.
+- [ ] Negatif puan en üst rütbeye (Efsane) düşüyor; `getRankInfo` negatif değerde Çaylak dönmeli (`src/lib/rank.ts`, testte `TODO(Faz 2)`).
 - [ ] Girişte `score` doğru taşınsın; sensör ekranı skora 0'dan başlamasın.
 - [ ] Sohbet:
   - Geçmiş yüklenirken `res.ok` kontrol edilsin.
