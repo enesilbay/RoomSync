@@ -81,7 +81,7 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
 
 ### Algılama
 
-- [ ] 🟠 `useDeskDetector` hook'u:
+- [x] 🟠 `useDeskDetector` hook'u:
   - `Accelerometer.setUpdateInterval(200)` ve low-pass filtre
   - Giriş ve çıkış için ayrı eşikler (histerezis)
   - Masaya oturma için 2 sn kararlılık
@@ -89,52 +89,71 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
   - Sabitlik kontrolü: |a| varyans penceresi (elde düz tutulan telefon sayılmasın)
   - Başta `isAvailableAsync` kontrolü
   - Yalnızca odak istendiğinde dinlesin (pil)
-- [ ] 🟡 Yüz yukarı / yüzüstü: z işaretini platforma göre normalize et, **iOS ve Android'de cihazda doğrula**. `DeviceMotion` gravity vektörünü alternatif olarak değerlendir.
-- [ ] Detector durum makinesi için birim testleri (sahte örnek serileriyle).
+- [ ] 🟡 Yüz yukarı / yüzüstü: z işaretini platforma göre normalize et, **iOS ve Android'de cihazda doğrula**. `DeviceMotion` gravity vektörünü alternatif olarak değerlendir. _(Kod hazır: `ANDROID_AXIS_SIGN`; fiziksel cihaz doğrulaması bekliyor.)_
+- [x] Detector durum makinesi için birim testleri (sahte örnek serileriyle).
 
 ### Zamanlayıcı ve durum makinesi
 
-- [ ] 🟠 Tek bir reducer ile odak durum makinesi: `idle → waiting → focusing ⇄ break → completed`. Tek bir başlat kontrolü olsun; play butonu ve süre modalı da aynı akıştan geçsin.
+- [x] 🟠 Tek bir reducer ile odak durum makinesi: `idle → waiting → focusing ⇄ break → completed`. Tek bir başlat kontrolü olsun; play butonu ve süre modalı da aynı akıştan geçsin.
   - Bu, sayaç donma hatasını giderir (`sensor.tsx:403-427`): `focusRequested` ayarlanmıyor.
-- [ ] 🟡 Kalan süre bitiş zaman damgasından (`Date.now()`) hesaplansın. State updater içindeki yan etkiler (`sensor.tsx:393`) effect'e taşınsın.
-- [ ] 🟡 Gerçek mola fazı ekle:
+- [x] 🟡 Kalan süre bitiş zaman damgasından (`Date.now()`) hesaplansın. State updater içindeki yan etkiler (`sensor.tsx:393`) effect'e taşınsın.
+- [x] 🟡 Gerçek mola fazı ekle:
   - Telefon kaldırılınca mola sayacı yukarı saysın.
   - Mola uzayınca uyarı versin (süre ayarlanabilir).
-- [ ] Bitiş anı:
+- [x] Bitiş anı:
   - Titreşim, ses ve yerel bildirim
   - Özet kartı: süre, kaldırma sayısı, odak kalitesi %
-- [ ] 🟡 Parlaklık yarışı:
+- [x] 🟡 Parlaklık yarışı:
   - Her `await` sonrası iptal kontrolü yapılsın.
   - Android'de `restoreSystemBrightnessAsync` kullanılsın.
   - Ekran hiçbir durumda 0 parlaklıkta kalmasın.
-- [ ] Odak modları (ayardan seçilsin):
+- [x] Odak modları (ayardan seçilsin):
   - Sıkı mod: telefon yüzüstü, ekran tam karartılır.
   - Esnek mod: telefon yüzü yukarı, OLED-siyah zemin üstünde minimal sayaç.
 
 ### Ses
 
-- [ ] 🟡 `expo-av` → `expo-audio` (SDK 55'te `expo-av` kaldırılıyor).
-- [ ] 🟡 Ses yükleme yarışı:
+- [x] 🟡 `expo-av` → `expo-audio` (SDK 55'te `expo-av` kaldırılıyor).
+- [x] 🟡 Ses yükleme yarışı:
   - Her yükleme kendi haritasını kullansın.
   - Yükleme bitince oynatma senkronlansın.
   - `setAudioModeAsync` ile iOS sessiz anahtar politikası ayarlansın.
-- [ ] Telefon bırakılınca ses yumuşakça açılsın, kaldırılınca yumuşakça kısılsın.
-- [ ] Ses dosyalarını mono AAC/Opus 64 kbps'e sıkıştır (~50 MB → ~5 MB). `deep_focus` için gerçek bir dosya bul ya da seçeneği kaldır. Ses lisanslarını ve kaynaklarını belgele.
+- [x] Telefon bırakılınca ses yumuşakça açılsın, kaldırılınca yumuşakça kısılsın.
+- [x] Ses dosyalarını mono AAC/Opus 64 kbps'e sıkıştır (~50 MB → ~5 MB). `deep_focus` için gerçek bir dosya bul ya da seçeneği kaldır. Ses lisanslarını ve kaynaklarını belgele.
 
 ### Solo ve çevrimdışı
 
-- [ ] **Solo mod:** hesap ve oda gerektirmeyen varsayılan "Odak" sekmesi.
-- [ ] **Yerel oturum geçmişi** (`expo-sqlite`):
+- [x] **Solo mod:** hesap ve oda gerektirmeyen varsayılan "Odak" sekmesi.
+- [x] **Yerel oturum geçmişi** (`expo-sqlite`):
   - Kayıt alanları: başlangıç, bitiş, odak sn, mola sn, kaldırma sayısı.
   - Çevrimdışı çalışsın.
   - "Bugün" kartı bu geçmişten beslensin.
-- [ ] Pil: 1 saatten uzun oturumlarda şarj önerisi (`expo-battery`).
+- [x] Pil: 1 saatten uzun oturumlarda şarj önerisi (`expo-battery`).
 
 **Bitti tanımı:**
 
 - Hesapsız ve internetsiz tam bir odak → mola → bitiş döngüsü çalışıyor.
 - Detector testleri yeşil.
 - iOS ve Android'de fiziksel cihaz testi yapıldı.
+
+> 🟡 **Faz 1 kod olarak tamamlandı (2026-10-28); fiziksel cihaz testi bekliyor.** `typecheck`, `lint:strict`, 207 test, `expo-doctor` (18/18) ve Android/iOS bundle export'u yeşil. Hesapsız/internetsiz döngü testle doğrulandı (SoloFocusScreen testi).
+>
+> Cihazda doğrulanacaklar (iOS + Android):
+> - Yüz yukarı / yüzüstü algılama ve `ANDROID_AXIS_SIGN` işareti; eşiklerin (2 sn yerleşme, 0,5 sn ayrılma, 0,04 g sabitlik) gerçek masada davranışı
+> - Sıkı modda karartma + parlaklığın geri gelmesi; esnek moddaki minimal sayacın okunabilirliği
+> - Tam ekran katmanın sekme çubuğunu ve Android sistem çubuklarını kapatması
+> - Titreşim, bitiş zili (sessiz modda ve ortam sesiyle birlikte), ses döngülerinin dikişi
+> - Uygulamadan çıkınca 5 dk sonra "Mola uzadı" bildirimi ve masaya dönünce iptali (dev/production build'de)
+> - Pil önerisi (şarja tak/çıkar), uzun oturumda ekranın açık kalması
+> - Oda: yeniden bağlanmada (uçak modu) ve odadan çıkışta varlık durumu; iki cihazla düello
+>
+> Plan dışında ek olarak yapılanlar:
+> - iOS ile Android ivmeölçer z işaretinin ters olduğu bulundu; eski yüzüstü algılama iOS'ta tersti
+> - Oda varlığı yeniden bağlanmada tekrar gönderiliyor ve socket kapanmadan önce `false` garanti (Faz 2'deki iki madde)
+> - Mola bildirimi (uygulama arka plandayken) ve uygulama içi "Mola uzadı" uyarısı
+> - Sesler `scripts/audio/encode-sounds.sh` ile byte düzeyinde yeniden üretilebilir; bitiş zili projede üretildi
+> - Odadan çıkış aktif oturumu bitirir (odak varsa kaydedilir)
+> - Ses dosyalarının kaynak/lisans durumu `assets/sounds/CREDITS.md`'de; orijinal 4 kaydın lisansı Faz 7 öncesi doğrulanmalı
 
 ---
 
@@ -171,9 +190,9 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
   - Girişte bağlansın, çıkışta kapansın. Global soketin yalnızca açılışta kurulma hatası böylece giderilir.
   - Oda ve DM aynı bağlantıyı kullansın.
   - `connect_error` gelince çevrimdışı bandı görünsün.
-  - Yeniden bağlanınca mevcut presence tekrar gönderilsin.
+  - Yeniden bağlanınca mevcut presence tekrar gönderilsin. ✅ (Faz 1, oda socket'i)
   - Listener'lar `.off` ile kaldırılsın.
-  - Güncel userId ref'ten okunsun.
+  - Güncel userId ref'ten okunsun. ✅ (Faz 1, oda socket'i)
   - Async kurulum, ekran kapandıktan sonra soket açmasın (sızıntı).
 - [ ] 🟡 Dürtmenin iki kez gösterilmesi (Alert + toast) düzeltilsin.
 - [ ] Push:
@@ -183,7 +202,7 @@ Neden ikinci: Ürünün varlık sebebi bu döngü ve şu an hatalı. Sonraki tas
 
 ### Veri hataları
 
-- [ ] 🟡 "Bugün" kartı gerçekten bugünün dakikasını göstersin (`me.tsx:317`). Kaynak: yerel geçmiş ya da backend'de günlük alan `[BE]`.
+- [x] 🟡 "Bugün" kartı gerçekten bugünün dakikasını göstersin (`me.tsx:317`). Kaynak: yerel geçmiş ya da backend'de günlük alan `[BE]`.
 - [ ] Seri değeri her yerde aynı yedekle gelsin (`?? 1` ile `?? 0` tutarsız, `me.tsx:295/318`).
 - [ ] 🟡 Liderlik: ya gerçek haftalık veri gelsin `[BE]` ya da etiket "Tüm zamanlar" olsun. Sekme değişiminde eski yanıtın yenisinin üstüne yazılması engellensin.
 - [ ] 🟡 Analitik:
