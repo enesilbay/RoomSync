@@ -3,11 +3,11 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { apiUrl, assetUrl } from './config/api';
-import { AppScreen, PageHeader, SoftCard } from './components/common';
-import { FramedAvatar } from './components/FramedAvatar';
-import { C } from './(tabs)/sensor';
-import { getRankInfo } from './utils/rank';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { AppScreen, PageHeader, SoftCard } from '@/src/components/common';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C } from '@/src/theme';
+import { getRankInfo } from '@/src/lib/rank';
 
 const T = C;
 

@@ -8,12 +8,11 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { apiUrl, assetUrl } from '../config/api';
-import { FramedAvatar } from '../components/FramedAvatar';
-import { FocusSummaryStrip } from '../components/common';
-import { C } from './sensor';
-import { getRankInfo, getRankProgress } from '../utils/rank';
-import { Theme } from '../utils/theme';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { FocusSummaryStrip } from '@/src/components/common';
+import { C, Theme } from '@/src/theme';
+import { getRankInfo, getRankProgress } from '@/src/lib/rank';
 
 const T = C;
 

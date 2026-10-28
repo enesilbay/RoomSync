@@ -19,12 +19,11 @@ import Slider from '@react-native-community/slider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { BACKEND_URL, apiUrl, assetUrl } from '../config/api';
-import { FramedAvatar } from '../components/FramedAvatar';
-import { Theme } from '../utils/theme';
+import { BACKEND_URL, apiUrl, assetUrl } from '@/src/lib/api';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C, Theme } from '@/src/theme';
 
 const { width, height } = Dimensions.get('window');
-export const C = Theme.colors;
 const T = C;
 
 const SOUNDS = [

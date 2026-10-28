@@ -56,3 +56,6 @@ export const Theme = {
     caption: { fontSize: 12, fontWeight: '400' as const, color: '#6B7280' },
   }
 };
+
+/** Uygulama genelindeki renk paleti (kısa ad). */
+export const C = Theme.colors;

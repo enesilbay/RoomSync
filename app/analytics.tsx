@@ -4,9 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LineChart } from 'react-native-chart-kit';
-import { apiUrl } from './config/api';
-import { AppScreen, PageHeader, SoftCard } from './components/common';
-import { C } from './(tabs)/sensor';
+import { apiUrl } from '@/src/lib/api';
+import { AppScreen, PageHeader, SoftCard } from '@/src/components/common';
+import { C } from '@/src/theme';
 
 const T = C;
 const { width } = Dimensions.get('window');

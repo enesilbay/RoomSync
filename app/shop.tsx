@@ -3,10 +3,9 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacit
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { AppScreen, PageHeader, SoftCard } from './components/common';
-import { apiUrl, getAuthHeaders } from './config/api';
-import { C } from './(tabs)/sensor';
-import { Theme } from './utils/theme';
+import { AppScreen, PageHeader, SoftCard } from '@/src/components/common';
+import { apiUrl, getAuthHeaders } from '@/src/lib/api';
+import { C, Theme } from '@/src/theme';
 
 const T = C;
 

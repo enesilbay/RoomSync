@@ -16,9 +16,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { io, Socket } from 'socket.io-client';
-import { apiUrl, assetUrl } from './config/api';
-import { FramedAvatar } from './components/FramedAvatar';
-import { C } from './(tabs)/sensor';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C } from '@/src/theme';
 
 const BACKEND_URL = apiUrl('');
 const T = C;

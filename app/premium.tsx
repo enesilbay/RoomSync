@@ -4,10 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { apiUrl } from './config/api';
-import { AppScreen, CustomAlertModal, PageHeader, SoftCard } from './components/common';
-import { C } from './(tabs)/sensor';
-import { Theme } from './utils/theme';
+import { apiUrl } from '@/src/lib/api';
+import { AppScreen, CustomAlertModal, PageHeader, SoftCard } from '@/src/components/common';
+import { C, Theme } from '@/src/theme';
 
 const T = C;
 

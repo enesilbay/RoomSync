@@ -13,12 +13,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { apiUrl, assetUrl, getAuthHeaders } from './config/api';
-import { AppScreen, DarkSheetModal, IconButton, PageHeader, SoftCard } from './components/common';
-import { FramedAvatar } from './components/FramedAvatar';
-import { C } from './(tabs)/sensor';
-import { getRankInfo, getRankProgress } from './utils/rank';
-import { Theme } from './utils/theme';
+import { apiUrl, assetUrl, getAuthHeaders } from '@/src/lib/api';
+import { AppScreen, DarkSheetModal, IconButton, PageHeader, SoftCard } from '@/src/components/common';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C, Theme } from '@/src/theme';
+import { getRankInfo, getRankProgress } from '@/src/lib/rank';
 
 const T = C;
 

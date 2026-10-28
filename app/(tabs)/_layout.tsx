@@ -5,8 +5,8 @@ import { Platform, Alert } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiUrl, BACKEND_URL } from '../config/api';
-import { C } from './sensor';
+import { apiUrl, BACKEND_URL } from '@/src/lib/api';
+import { C } from '@/src/theme';
 import { io, Socket } from 'socket.io-client';
 
 // Expo Go (SDK 53+) Android push bildirimlerini desteklemiyor.

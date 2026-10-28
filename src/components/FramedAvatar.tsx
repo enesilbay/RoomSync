@@ -129,5 +129,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-export default function Dummy() { return null; }

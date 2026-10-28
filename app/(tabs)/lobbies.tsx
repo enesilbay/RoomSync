@@ -9,10 +9,9 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { apiUrl, assetUrl } from '../config/api';
-import { FramedAvatar } from '../components/FramedAvatar';
-import { C } from './sensor';
-import { Theme } from '../utils/theme';
+import { apiUrl, assetUrl } from '@/src/lib/api';
+import { FramedAvatar } from '@/src/components/FramedAvatar';
+import { C, Theme } from '@/src/theme';
 
 const T = C;
 const { width, height } = Dimensions.get('window');

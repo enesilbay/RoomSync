@@ -2,8 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { AppScreen, SoftCard } from './components/common';
-import { C } from './(tabs)/sensor';
+import { AppScreen, SoftCard } from '@/src/components/common';
+import { C } from '@/src/theme';
 
 const T = C;
 

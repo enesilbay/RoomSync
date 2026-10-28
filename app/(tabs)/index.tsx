@@ -8,9 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { apiUrl } from '../config/api';
-import { C } from './sensor';
-import { Theme } from '../utils/theme';
+import { apiUrl } from '@/src/lib/api';
+import { C, Theme } from '@/src/theme';
 
 const T = C;
 const { width } = Dimensions.get('window');

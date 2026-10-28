@@ -15,8 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { C } from '../(tabs)/sensor';
-import { Theme } from '../utils/theme';
+import { C, Theme } from '@/src/theme';
 
 const T = C;
 const { width, height } = Dimensions.get('window');
@@ -548,6 +547,4 @@ const bg = StyleSheet.create({
     opacity: 0.45,
   },
 });
-
-export default function Dummy() { return null; }
 
